@@ -1,0 +1,25 @@
+{
+  "board": {
+    "boardSize": 8,
+    "empty": { "x": 0, "y": 0 },
+    "placements": [
+      { "type": "commander", "owner": 1 },
+      { "type": "archer", "owner": 1 },
+      { "type": "swordsman", "owner": 1 },
+      { "type": "archer", "owner": 1 },
+      { "type": "swordsman", "owner": 1 },
+      { "type": "commander", "owner": 2 },
+      { "type": "archer", "owner": 2 },
+      { "type": "swordsman", "owner": 2 },
+      { "type": "archer", "owner": 2 },
+      { "type": "swordsman", "owner": 2 }
+    ]
+  },
+  "render": {
+    "width": 640,
+    "height": 360,
+    "pixelSize": 1,
+    "normalEdgeStrength": 0.9,
+    "depthEdgeStrength": 0.5
+  }
+}

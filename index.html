@@ -115,22 +115,82 @@
     }
     #game-overlay.victory .game-overlay__box { border-color: #f4b41b; color: #f4b41b; }
     #game-overlay.defeat .game-overlay__box { border-color: #b0305c; color: #b0305c; }
+    #game-overlay.p1-win .game-overlay__box { border-color: #5d86ba; color: #5d86ba; }
+    #game-overlay.p2-win .game-overlay__box { border-color: #b0305c; color: #b0305c; }
     #game-overlay .game-overlay__title { margin-bottom: 8px; }
     #game-overlay .game-overlay__btn { background: rgba(26, 28, 44, 0.95); box-shadow: inset -2px -2px 0 rgba(0,0,0,0.4); }
+
+    .screen-overlay {
+      position: absolute; inset: 0; z-index: 20;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(10, 12, 20, 0.92);
+      pointer-events: auto;
+    }
+    .screen-overlay--hidden { display: none !important; }
+    .screen-box {
+      width: min(520px, 92vw);
+      border: 4px solid #8d91a1;
+      background: rgba(26, 28, 44, 0.95);
+      box-shadow: inset -4px -4px 0 rgba(0,0,0,0.4);
+      padding: 18px 18px 14px;
+      color: #eee;
+      text-align: center;
+    }
+    .screen-title { font-size: 12px; margin-bottom: 12px; color: #f4b41b; }
+    .screen-subtitle { font-size: 9px; color: #8d91a1; margin-bottom: 14px; }
+    .mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .mode-btn {
+      cursor: pointer;
+      border: 4px solid #5d86ba;
+      background: rgba(26, 28, 44, 0.95);
+      padding: 14px 10px;
+      font-family: 'Press Start 2P', cursive;
+      color: #fff;
+      box-shadow: inset -3px -3px 0 rgba(0,0,0,0.35);
+      font-size: 10px;
+    }
+    .mode-btn--pvp { border-color: #b0305c; }
+    .mode-btn:hover { opacity: 0.95; }
+    .mode-hint { margin-top: 8px; font-size: 8px; color: #8d91a1; line-height: 1.5; }
+    .progress-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .progress-label { font-size: 9px; color: #8d91a1; }
+    .progress-value { font-size: 10px; color: #fff; }
+    .progress-bar { margin-top: 10px; height: 10px; border: 2px solid #8d91a1; background: #0c0d12; }
+    .progress-bar__fill { height: 100%; width: 0%; background: #5d86ba; }
   </style>
-  <script type="module" crossorigin src="/assets/index-D7Avz0HO.js"></script>
+  <script type="module" crossorigin src="/assets/index-BdTNu4yX.js"></script>
 </head>
 <body>
   <div id="app">
     <div id="game-viewport">
       <div id="game-ui">
         <div id="state-ui"></div>
-        <div id="start-overlay" class="start-overlay" aria-label="Нажмите для старта">
-          <p class="start-overlay__text">
-            <strong>Кликните, чтобы начать</strong>
-            Выберите юнита и сдвиньте его к пустой клетке
-          </p>
+        <div id="loading-overlay" class="screen-overlay" aria-live="polite">
+          <div class="screen-box">
+            <div class="screen-title">ЗАГРУЗКА</div>
+            <div class="progress-row">
+              <div class="progress-label">Ресурсы</div>
+              <div id="loading-percent" class="progress-value">0%</div>
+            </div>
+            <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div id="loading-bar" class="progress-bar__fill"></div>
+            </div>
+            <div id="loading-detail" class="screen-subtitle mt-3">Подготовка…</div>
+          </div>
         </div>
+
+        <div id="mode-overlay" class="screen-overlay screen-overlay--hidden" aria-label="Выбор режима">
+          <div class="screen-box">
+            <div class="screen-title">ВЫБОР РЕЖИМА</div>
+            <div class="screen-subtitle">Кампания — против ИИ. Дуэль — вдвоём на одном экране.</div>
+            <div class="mode-grid">
+              <button type="button" id="mode-pve" class="mode-btn">КАМПАНИЯ</button>
+              <button type="button" id="mode-pvp" class="mode-btn mode-btn--pvp">ДУЭЛЬ</button>
+            </div>
+            <div class="mode-hint">После выбора начнётся появление уровня</div>
+          </div>
+        </div>
+
         <div id="game-overlay" class="" aria-live="polite">
           <div class="game-overlay__box">
             <div id="game-overlay__title" class="game-overlay__title"></div>
@@ -141,14 +201,14 @@
         <div class="hud-layer">
           <div class="flex justify-between items-start w-full">
             <div class="flex flex-col gap-0 pointer-events-auto">
-              <div class="pixel-border border-game-red mb-2 text-[10px] text-white text-center">АРМИЯ AI</div>
+              <div id="army-p2-title" class="pixel-border border-game-red mb-2 text-[10px] text-white text-center">АРМИЯ AI</div>
               <div id="army-p2-list" class="flex flex-col gap-0"></div>
             </div>
             <div id="turn-indicator" class="pixel-border border-white text-white text-[10px] h-fit pointer-events-auto cursor-default">
               ВАШ ХОД
             </div>
             <div class="flex flex-col gap-0 items-end pointer-events-auto text-right">
-              <div class="pixel-border border-game-blue mb-2 text-[10px] text-white text-center w-full">АРМИЯ P1</div>
+              <div id="army-p1-title" class="pixel-border border-game-blue mb-2 text-[10px] text-white text-center w-full">АРМИЯ P1</div>
               <div id="army-p1-list" class="flex flex-col gap-0"></div>
             </div>
           </div>

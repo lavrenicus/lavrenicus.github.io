@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lavrenicus — Technical Artist &amp; Python Specialist</title>
+<meta name="description" content="Portfolio of Lavrenicus: technical artist, pipeline engineer and game developer.">
+<link rel="stylesheet" href="css/style.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<div class="grid-overlay" aria-hidden="true"></div>
+
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="#home" class="logo">LAVRENICUS<span class="cursor">_</span></a>
+    <nav class="main-nav" aria-label="Primary">
+      <a href="#home">home</a>
+      <a href="#projects">projects</a>
+      <a href="#demos">demos</a>
+      <a href="#tech">tech</a>
+      <a href="#about">about</a>
+      <a href="#links">links</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <section id="home" class="hero">
+    <div class="wrap hero-inner">
+      <p class="eyebrow">&gt; technical artist / python specialist / game developer</p>
+      <h1>I build tools,<br>pipelines and games.</h1>
+      <p class="lede">Technical art, real-time engine integration and CG pipeline automation. Based in Thailand, working across Python, Unity and Babylon.js.</p>
+      <div class="hero-actions">
+        <a href="#projects" class="btn btn-primary">view my work</a>
+        <a href="#demos" class="btn btn-ghost">play demos</a>
+      </div>
+      <pre class="terminal" aria-hidden="true"><code>&gt; import pipeline
+&gt; render.optimize()
+&gt; deploy(target="web")
+&gt; status: ready_</code></pre>
+    </div>
+  </section>
+
+  <section id="projects" class="section">
+    <div class="wrap">
+      <h2 class="section-title"><span class="tag">01</span> featured projects</h2>
+      <div class="card-grid">
+
+        <article class="card">
+          <div class="card-media placeholder-media" data-label="PixiAndDestroy"></div>
+          <div class="card-body">
+            <h3>PixiAndDestroy</h3>
+            <p class="card-meta">tactical grid game · Three.js · in development</p>
+            <p class="card-desc">A grid-based tactical game built with a custom finite-state-machine core and Three.js rendering.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-media placeholder-media" data-label="BAM History"></div>
+          <div class="card-body">
+            <h3>BAM: Historical Journey</h3>
+            <p class="card-meta">interactive historical exhibit · Babylon.js</p>
+            <p class="card-desc">An interactive walkthrough built for an exhibit on the Baikal-Amur Mainline, rendered in Babylon.js for an interactive kiosk.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-media placeholder-media" data-label="Campus Navigator"></div>
+          <div class="card-body">
+            <h3>Campus Navigator</h3>
+            <p class="card-meta">3D wayfinding tool · Babylon.js</p>
+            <p class="card-desc">A navigable 3D map built for an institute's campus, letting visitors find their way through the building in real time.</p>
+          </div>
+        </article>
+
+        <article class="card">
+          <div class="card-media placeholder-media" data-label="Logic Rails"></div>
+          <div class="card-body">
+            <h3>Logic Rails</h3>
+            <p class="card-meta">puzzle game · Unity · WebGL build</p>
+            <p class="card-desc">A logic puzzle about routing trains through a rail network, built for an interactive stand and exported to WebGL.</p>
+          </div>
+        </article>
+
+      </div>
+    </div>
+  </section>
+
+  <section id="demos" class="section section-alt">
+    <div class="wrap">
+      <h2 class="section-title"><span class="tag">02</span> playable demos</h2>
+      <p class="section-note">Drop each game's WebGL build into <code>/demos/&lt;project&gt;/</code> and point the iframe below at its <code>index.html</code>.</p>
+
+      <div class="demo-tabs" role="tablist" aria-label="Select a demo">
+        <button class="demo-tab active" role="tab" aria-selected="true" data-demo="pixiandestroy">PixiAndDestroy</button>
+        <button class="demo-tab" role="tab" aria-selected="false" data-demo="bam">BAM History</button>
+        <button class="demo-tab" role="tab" aria-selected="false" data-demo="campus">Campus Navigator</button>
+        <button class="demo-tab" role="tab" aria-selected="false" data-demo="rails">Logic Rails</button>
+      </div>
+
+      <div class="demo-frame-wrap">
+        <iframe id="demo-frame" class="demo-frame" src="demos/pixiandestroy/index.html" title="Playable demo" loading="lazy"></iframe>
+        <p class="demo-fallback">No build found yet at this path — add your exported game to see it here.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="tech" class="section">
+    <div class="wrap">
+      <h2 class="section-title"><span class="tag">03</span> technical background</h2>
+      <ul class="tech-grid">
+        <li>Python</li>
+        <li>Unity</li>
+        <li>Babylon.js</li>
+        <li>Three.js</li>
+        <li>PyTorch</li>
+        <li>Docker</li>
+        <li>PySide / Qt</li>
+        <li>Pipeline automation</li>
+        <li>Rigging &amp; motion capture</li>
+        <li>Render farm ops</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="about" class="section section-alt">
+    <div class="wrap about-grid">
+      <div>
+        <h2 class="section-title"><span class="tag">04</span> about</h2>
+        <p>Technical artist and Python developer working on CG pipeline automation, real-time engine integration and rigging tools. Background in VFX and animation studio pipelines, motion capture, and render farm management.</p>
+        <p>Currently based in Hua Hin, Thailand.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="links" class="section">
+    <div class="wrap">
+      <h2 class="section-title"><span class="tag">05</span> links</h2>
+      <ul class="links-list">
+        <li><a href="https://github.com/" target="_blank" rel="noopener">github</a></li>
+        <li><a href="https://sketchfab.com/modelicus" target="_blank" rel="noopener">sketchfab</a></li>
+        <li><a href="#" target="_blank" rel="noopener">linkedin</a></li>
+        <li><a href="mailto:hello@example.com">email</a></li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="wrap">
+    <p>built with python, unity &amp; babylon.js — optimized for github pages</p>
+  </div>
+</footer>
+
+<script src="js/script.js"></script>
+</body>
+</html>

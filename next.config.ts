@@ -2,10 +2,11 @@
 
 const nextConfig: NextConfig = {
   output: "export",
+  basePath: "",
+  trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  trailingSlash: true,
 };
 
 export default nextConfig;

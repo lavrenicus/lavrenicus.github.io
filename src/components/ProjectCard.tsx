@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import type { Project } from "@/types";
+import type { ProjectItem } from "@/types";
 
 export function calculateTilt(rect: DOMRect, x: number, y: number) {
   return {
@@ -10,7 +10,7 @@ export function calculateTilt(rect: DOMRect, x: number, y: number) {
   };
 }
 
-export default function ProjectCard({ project, index }: { project: Project; index: number }) {
+export default function ProjectCard({ project, index }: { project: ProjectItem; index: number }) {
   const card = useRef<HTMLElement>(null);
   const frame = useRef(0);
 
@@ -37,24 +37,32 @@ export default function ProjectCard({ project, index }: { project: Project; inde
       ref={card}
       onPointerMove={move}
       onPointerLeave={reset}
-      className="glass-card project-tilt overflow-hidden rounded-xl"
+      className="glass-card project-tilt rounded-xl p-4"
     >
-      <div
-        className="relative aspect-[5/3] border-b border-white/10"
-        style={{
-          background: "linear-gradient(135deg, " + project.gradientFrom + ", " + project.gradientTo + ")",
-        }}
-      >
-        <span className="micro-label absolute left-3 top-3 text-text-dim">
-          record / {String(index).padStart(2, "0")}
-        </span>
-        <span className="absolute bottom-3 right-3 h-2 w-2 rounded-full border border-accent" />
+      <div className="mb-3 flex items-center justify-between">
+        <span className="micro-label text-text-dim">record / {String(index).padStart(2, "0")}</span>
+        {project.status && <span className="micro-label text-accent">{project.status}</span>}
       </div>
-      <div className="p-4">
-        <h3 className="mb-2 text-lg font-semibold leading-tight tracking-tight">{project.title}</h3>
-        <p className="mb-3 font-mono text-[9px] font-light uppercase leading-relaxed tracking-wider text-accent">{project.meta}</p>
-        <p className="text-[13px] leading-relaxed text-text-dim">{project.description}</p>
+      <h3 className="mb-2 text-lg font-semibold leading-tight tracking-tight">{project.title}</h3>
+      <p className="mb-3 font-mono text-[9px] font-light uppercase leading-relaxed tracking-wider text-accent">{project.meta}</p>
+      <p className="mb-4 text-[13px] leading-relaxed text-text-dim">{project.description}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {project.stack.map((item) => (
+          <span key={item} className="micro-label rounded border border-white/10 px-2 py-1 text-text-dim">
+            {item}
+          </span>
+        ))}
       </div>
+      {project.link && (
+        <a
+          href={project.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-block font-mono text-[11px] text-accent hover:underline"
+        >
+          {project.linkLabel ?? "view"} →
+        </a>
+      )}
     </article>
   );
 }

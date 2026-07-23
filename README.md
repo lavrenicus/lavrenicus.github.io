@@ -19,11 +19,19 @@ npm run build
 
 The static output is in `out/`. Deployed automatically via GitHub Actions on push to `master`.
 
-## Adding a Demo
+## Content structure
+
+All content lives in `src/data/projects.ts`, split into three entities:
+
+- **`projects`** — technical/pipeline work with no playable demo (SmartPool, NNRigger, OpenClaw...). Add an object with `title`, `meta`, `description`, `stack`, optional `link`.
+- **`games`** — playable WebGL builds. Add an object with `title`, `meta`, `description`, `demoKey`, then drop the build into `public/demos/<demoKey>/` and set `demoAvailable: true`.
+- **`assets`** — 3D model showcase (e.g. Sketchfab). Add an object with `title`, `meta`, `image`, `link`.
+
+## Adding a game demo
 
 1. Export the game to WebGL.
-2. Copy the build into `public/demos/<project>/` so `index.html` is the entry point.
-3. Update `src/data/projects.ts` to add the card and demo tab.
+2. Copy the build into `public/demos/<demoKey>/` so `index.html` is the entry point.
+3. Add the entry to the `games` array in `src/data/projects.ts` and set `demoAvailable: true`.
 
 ## Tech Stack
 

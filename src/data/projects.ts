@@ -1,6 +1,35 @@
-﻿import { Project, TechSkill, NavLink, SocialLink } from "@/types";
+﻿import { ProjectItem, GameItem, AssetItem, TechSkill, NavLink, SocialLink } from "@/types";
 
-export const projects: Project[] = [
+// Technical projects — pipeline tools, no playable demo.
+export const projects: ProjectItem[] = [
+  {
+    id: "smartpool",
+    title: "SmartPool",
+    meta: "computer vision · C++ · OpenCV",
+    description: "Homography calibration for billiard table tracking using computer vision.",
+    stack: ["C++", "OpenCV"],
+    status: "in development",
+  },
+  {
+    id: "nnrigger",
+    title: "NNRigger",
+    meta: "automated rigging · PyTorch · GNN",
+    description: "A graph neural network system that automates character rigging from mesh data.",
+    stack: ["Python", "PyTorch"],
+    status: "active",
+  },
+  {
+    id: "openclaw",
+    title: "OpenClaw",
+    meta: "local AI client · Python",
+    description: "A local AI client with a persistent knowledge base and multi-agent tooling.",
+    stack: ["Python", "Ollama"],
+    status: "maintained",
+  },
+];
+
+// Playable WebGL games — rendered inside /public/demos/<demoKey>/.
+export const games: GameItem[] = [
   {
     id: "pixiandestroy",
     title: "PixiAndDestroy",
@@ -39,6 +68,17 @@ export const projects: Project[] = [
   },
 ];
 
+// 3D assets / models — external showcases (e.g. Sketchfab).
+export const assets: AssetItem[] = [
+  {
+    id: "asset-01",
+    title: "Add your first asset",
+    meta: "sketchfab · 3d model",
+    image: "/images/asset-placeholder.png",
+    link: "https://sketchfab.com/modelicus",
+  },
+];
+
 export const techSkills: TechSkill[] = [
   { name: "Python" },
   { name: "Unity" },
@@ -56,6 +96,7 @@ export const navLinks: NavLink[] = [
   { label: "home", href: "home" },
   { label: "projects", href: "projects" },
   { label: "games", href: "games" },
+  { label: "assets", href: "assets" },
   { label: "tech", href: "tech" },
   { label: "about", href: "about" },
   { label: "links", href: "links" },

@@ -26,7 +26,7 @@ export function createProgram(gl: WebGL2RenderingContext, vertex: string, fragme
 }
 
 export function resizeCanvas(canvas: HTMLCanvasElement, dpr = window.devicePixelRatio) {
-  const ratio = Math.min(dpr, 1.5);
+  const ratio = Math.min(dpr, 2);
   const width = Math.round(canvas.clientWidth * ratio);
   const height = Math.round(canvas.clientHeight * ratio);
   if (canvas.width === width && canvas.height === height) return false;

@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import Games from "./Games";
 
 vi.mock("@/data/projects", () => ({
-  projects: [
+  games: [
     { id: "one", title: "Demo One", demoKey: "one", demoAvailable: true },
     { id: "two", title: "Demo Two", demoKey: "two", demoAvailable: true },
     { id: "three", title: "Demo Three", demoKey: "three" },

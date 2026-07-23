@@ -1,4 +1,15 @@
-﻿export interface Project {
+﻿export interface ProjectItem {
+  id: string;
+  title: string;
+  meta: string;
+  description: string;
+  stack: string[];
+  link?: string;
+  linkLabel?: string;
+  status?: string;
+}
+
+export interface GameItem {
   id: string;
   title: string;
   meta: string;
@@ -7,6 +18,14 @@
   demoAvailable?: boolean;
   gradientFrom: string;
   gradientTo: string;
+}
+
+export interface AssetItem {
+  id: string;
+  title: string;
+  meta: string;
+  image: string;
+  link: string;
 }
 
 export interface TechSkill {

@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { projects } from "@/data/projects";
+import { games } from "@/data/projects";
 
-const DEMOS = projects.filter((p) => p.demoKey);
+const DEMOS = games;
 
 export default function Games() {
   const [active, setActive] = useState(DEMOS[0].demoKey);

@@ -7,9 +7,7 @@ const project = {
   title: "Demo",
   meta: "WebGL",
   description: "Description",
-  demoKey: "demo",
-  gradientFrom: "#000",
-  gradientTo: "#111",
+  stack: ["TypeScript"],
 };
 
 beforeEach(() => {

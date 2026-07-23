@@ -6,6 +6,7 @@ import Breadcrumbs from "./Breadcrumbs";
 import Hero from "./Hero";
 import Projects from "./Projects";
 import Games from "./Games";
+import Assets from "./Assets";
 import TechGrid from "./TechGrid";
 import About from "./About";
 import Links from "./Links";
@@ -17,6 +18,7 @@ const SECTIONS: Record<string, ComponentType<SectionProps>> = {
   home: Hero,
   projects: Projects,
   games: Games,
+  assets: Assets,
   tech: TechGrid,
   about: About,
   links: Links,
@@ -24,22 +26,26 @@ const SECTIONS: Record<string, ComponentType<SectionProps>> = {
 
 export default function PortfolioApp() {
   const [active, setActive] = useState("home");
+  const [pulseSignal, setPulseSignal] = useState(0);
   const mainRef = useRef<HTMLElement>(null);
   const ActiveSection = SECTIONS[active] ?? Hero;
   const navigate = useCallback((key: string) => {
-    setActive(key);
+    setActive((current) => {
+      if (current !== key) setPulseSignal((n) => n + 1);
+      return key;
+    });
     mainRef.current?.scrollTo({ top: 0 });
   }, []);
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-bg">
-      <GridOverlay dimmed={active === "games"} />
+      <GridOverlay dimmed={active === "games"} pulseSignal={pulseSignal} />
       <Header active={active} onNavigate={navigate} />
       <Breadcrumbs active={active} onNavigate={navigate} />
       <main
         ref={mainRef}
         data-testid="content-panel"
-        className="glass-shell panel-scroll relative z-10 mx-3 min-h-0 flex-1 overflow-y-auto rounded-[22px] sm:mx-5 lg:ml-[4vw] lg:mr-[18vw] lg:max-w-[1120px]"
+        className="glass-shell panel-scroll relative z-10 mx-3 min-h-0 flex-1 overflow-y-auto rounded-[22px] sm:mx-5 lg:ml-[4vw] lg:mr-[26vw] lg:max-w-[1120px]"
       >
         <div key={active} className="section-enter">
           <ActiveSection onNavigate={navigate} />

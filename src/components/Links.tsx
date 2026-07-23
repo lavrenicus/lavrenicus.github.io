@@ -4,7 +4,7 @@ export default function Links() {
   return (
     <section id="links" className="section-frame">
       <header className="mb-7">
-        <p className="micro-label mb-3 text-accent">05 / uplinks</p>
+        <p className="micro-label mb-3 text-accent">06 / uplinks</p>
         <h2 className="section-title">External links</h2>
       </header>
       <ul className="m-0 grid list-none gap-2 p-0 sm:grid-cols-2">

@@ -35,7 +35,7 @@ test("renders one static frame and disposes WebGL resources for reduced motion",
   expect(createProgram).toHaveBeenCalledWith(
     gl,
     expect.stringContaining("vec2[3]"),
-    expect.stringContaining("mix(0.18, 0.85"),
+    expect.stringContaining("mix(0.3, 1.35"),
   );
   expect(gl.drawArrays).toHaveBeenCalledOnce();
   unmount();

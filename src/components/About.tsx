@@ -1,7 +1,7 @@
 ﻿export default function About() {
   return (
     <section id="about" className="section-frame">
-      <p className="micro-label mb-3 text-accent">04 / profile</p>
+      <p className="micro-label mb-3 text-accent">05 / profile</p>
       <div className="grid gap-8 lg:grid-cols-[.8fr_1.2fr] lg:items-start">
         <h2 className="section-title">About the operator</h2>
         <div className="glass-card rounded-2xl p-5 sm:p-7">

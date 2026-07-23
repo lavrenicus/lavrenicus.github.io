@@ -15,10 +15,10 @@ test("switches sections and updates breadcrumbs", async () => {
 
   await user.click(screen.getByRole("button", { name: "projects" }));
 
-  expect(screen.getByRole("heading", { name: "Featured projects" })).toBeInTheDocument();
+  expect(screen.getByRole("heading", { name: "Projects" })).toBeInTheDocument();
   expect(screen.getAllByText("projects").some((node) => node.getAttribute("aria-current") === "page")).toBe(true);
   const panel = screen.getByTestId("content-panel");
-  expect(panel).toHaveClass("lg:ml-[4vw]", "lg:mr-[18vw]");
+  expect(panel).toHaveClass("lg:ml-[4vw]", "lg:mr-[26vw]");
   expect(panel.firstElementChild).toHaveClass("section-enter");
   expect(HTMLElement.prototype.scrollTo).toHaveBeenCalledWith({ top: 0 });
 });

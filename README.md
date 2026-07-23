@@ -1,26 +1,34 @@
-# Lavrenicus portfolio
+﻿# Lavrenicus Portfolio
 
-Static site, no build step. GitHub Pages ready.
+Next.js + TypeScript + Tailwind CSS. Static export to GitHub Pages.
 
-## Structure
+## Development
 
-- `index.html` — main page
-- `css/style.css` — Cyber Terminal theme (electric blue)
-- `js/script.js` — demo tab switching
-- `demos/<project>/` — drop each WebGL build here as `index.html` + assets
+```bash
+npm install
+npm run dev
+```
 
-## Deploy on GitHub Pages
+Open [http://localhost:3000](http://localhost:3000)
 
-1. Push this folder as the repo root (or `/docs`).
-2. Repo settings → Pages → deploy from branch, root (or `/docs`).
-3. Site goes live at `https://<username>.github.io/<repo>/`.
+## Build & Deploy
 
-## Adding a demo
+```bash
+npm run build
+```
 
-1. Export the game to WebGL (Unity: `File → Build Settings → WebGL`; Babylon.js: bundle with your existing build tooling).
-2. Copy the exported files into `demos/<project>/` so `demos/<project>/index.html` is the entry point.
-3. In `js/script.js`, the `demoPaths` object already points at the four placeholder folders — update the key names if project names change.
+The static output is in `out/`. Deployed automatically via GitHub Actions on push to `master`.
 
-## Editing content
+## Adding a Demo
 
-Project cards, tech list, and about text all live directly in `index.html` — no CMS, just edit the markup.
+1. Export the game to WebGL.
+2. Copy the build into `public/demos/<project>/` so `index.html` is the entry point.
+3. Update `src/data/projects.ts` to add the card and demo tab.
+
+## Tech Stack
+
+- **Framework:** Next.js (App Router)
+- **Styling:** Tailwind CSS v4
+- **Language:** TypeScript
+- **Fonts:** Space Grotesk + JetBrains Mono (via next/font)
+- **Deploy:** GitHub Pages (static export)

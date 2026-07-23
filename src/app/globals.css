@@ -1,0 +1,150 @@
+@import "tailwindcss";
+
+@theme inline {
+  --color-bg: #050507;
+  --color-bg-alt: #09090d;
+  --color-panel: rgb(255 255 255 / 0.04);
+  --color-border: rgb(255 255 255 / 0.1);
+  --color-border-strong: rgb(255 255 255 / 0.2);
+  --color-text: #edf4ff;
+  --color-text-dim: #8e9bad;
+  --color-accent: #0080ff;
+  --color-accent-dim: rgb(0 128 255 / 0.45);
+  --font-display: var(--font-space), sans-serif;
+  --font-mono: var(--font-jetbrains), monospace;
+  --breakpoint-md: 768px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+body {
+  background: #050507;
+  color: #edf4ff;
+  font-family: var(--font-space), sans-serif;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+a {
+  outline: none;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:focus-visible,
+a:focus-visible {
+  outline: 1px solid #0080ff;
+  outline-offset: 4px;
+}
+
+.wireframe-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.glass-shell {
+  background: rgb(255 255 255 / 0.035);
+  border: 1px solid rgb(255 255 255 / 0.11);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.08),
+    0 24px 80px rgb(0 0 0 / 0.48);
+  backdrop-filter: blur(8px) saturate(125%);
+}
+
+.glass-card {
+  background: rgb(255 255 255 / 0.035);
+  border: 1px solid rgb(255 255 255 / 0.1);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.045);
+}
+
+.edge-hover {
+  transition: border-color 160ms ease, color 160ms ease, background-color 160ms ease;
+}
+
+.edge-hover:hover {
+  border-color: rgb(255 255 255 / 0.24);
+}
+
+.section-frame {
+  min-height: 100%;
+  padding: clamp(1.25rem, 3vw, 2.5rem);
+}
+
+.section-title {
+  font-size: clamp(2rem, 4vw, 4.25rem);
+  font-weight: 700;
+  letter-spacing: -0.055em;
+  line-height: 0.95;
+}
+
+.micro-label {
+  font-family: var(--font-jetbrains), monospace;
+  font-size: 0.68rem;
+  font-weight: 300;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.project-tilt {
+  transform: perspective(900px) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+  transform-style: preserve-3d;
+  transition: transform 160ms ease, border-color 160ms ease;
+  will-change: transform;
+}
+
+.project-tilt:hover {
+  border-color: rgb(255 255 255 / 0.24);
+}
+
+@keyframes section-enter {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    transform: translateX(0);
+  }
+  45% {
+    transform: translateX(2px);
+  }
+  100% {
+    clip-path: inset(0);
+    transform: translateX(0);
+  }
+}
+
+.section-enter {
+  min-height: 100%;
+  animation: section-enter 180ms steps(5, end);
+}
+
+.panel-scroll {
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+  scrollbar-width: thin;
+}
+
+@media (prefers-reduced-motion: reduce), (hover: none) {
+  .project-tilt {
+    transform: none !important;
+    transition: border-color 160ms ease;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .section-enter {
+    animation: none;
+  }
+}

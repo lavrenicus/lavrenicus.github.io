@@ -150,11 +150,60 @@ export const games: GameItem[] = [
 // 3D assets / models — external showcases (e.g. Sketchfab).
 export const assets: AssetItem[] = [
   {
-    id: "asset-01",
-    title: "Add your first asset",
-    meta: "sketchfab · 3d model",
-    image: "/images/asset-placeholder.png",
-    link: "https://sketchfab.com/modelicus",
+    id: "sci-fi-corridor",
+    title: "Sci-fi Corridor",
+    meta: "sci-fi · environment",
+    image: "/images/sketchfab/sci-fi-corridor.jpg",
+    link: "https://sketchfab.com/3d-models/none-f4c18c0c955a46d8b7327091725a915e",
+  },
+  {
+    id: "supermutant",
+    title: "Supermutant",
+    meta: "character · animation",
+    image: "/images/sketchfab/supermutant.jpg",
+    link: "https://sketchfab.com/3d-models/none-dfddb35e603c495fa9c9ece8d095f068",
+  },
+  {
+    id: "orc",
+    title: "Orc",
+    meta: "fantasy · character",
+    image: "/images/sketchfab/orc.jpg",
+    link: "https://sketchfab.com/3d-models/none-b84023de44ea48c09c82b9d69d8e24b6",
+  },
+  {
+    id: "swamp-creature",
+    title: "Swamp Creature",
+    meta: "creature · animation",
+    image: "/images/sketchfab/swamp-creature.jpg",
+    link: "https://sketchfab.com/3d-models/none-ac86acea72a34462a83aa8a380f663f2",
+  },
+  {
+    id: "goalkeeper",
+    title: "Goalkeeper",
+    meta: "character · 3d model",
+    image: "/images/sketchfab/goalkeeper.jpg",
+    link: "https://sketchfab.com/3d-models/none-517444d1642748e4985c2447d3841ac8",
+  },
+  {
+    id: "wizard",
+    title: "Wizard",
+    meta: "character · sculpt",
+    image: "/images/sketchfab/wizard.jpg",
+    link: "https://sketchfab.com/3d-models/none-e6113ef4918349f09d3cad74a9ff2a39",
+  },
+  {
+    id: "knight",
+    title: "Knight",
+    meta: "character · animation",
+    image: "/images/sketchfab/knight.jpg",
+    link: "https://sketchfab.com/3d-models/none-7ec0da12c73f4cef8b852bcc8f6522de",
+  },
+  {
+    id: "sci-fi-girl",
+    title: "Sci-fi Girl",
+    meta: "character · 3d model",
+    image: "/images/sketchfab/sci-fi-girl.jpg",
+    link: "https://sketchfab.com/3d-models/none-7f3c2e43814643da993d0eb45c67563c",
   },
 ];
 

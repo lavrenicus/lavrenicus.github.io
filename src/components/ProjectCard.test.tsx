@@ -8,6 +8,7 @@ const project = {
   meta: "WebGL",
   description: "Description",
   stack: ["TypeScript"],
+  scope: "personal" as const,
 };
 
 beforeEach(() => {

@@ -4,6 +4,7 @@
   meta: string;
   description: string;
   stack: string[];
+  scope: "personal" | "team";
   link?: string;
   linkLabel?: string;
   status?: string;

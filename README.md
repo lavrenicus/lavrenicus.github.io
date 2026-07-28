@@ -23,7 +23,7 @@ The static output is in `out/`. Deployed automatically via GitHub Actions on pus
 
 All content lives in `src/data/projects.ts`, split into three entities:
 
-- **`projects`** — technical/pipeline work with no playable demo (SmartPool, NNRigger, OpenClaw...). Add an object with `title`, `meta`, `description`, `stack`, optional `link`.
+- **`projects`** — technical/pipeline work grouped by `scope: "personal" | "team"`. Add an object with `title`, `meta`, `description`, `stack`, `scope`, and optional `link`.
 - **`games`** — playable WebGL builds. Add an object with `title`, `meta`, `description`, `demoKey`, then drop the build into `public/demos/<demoKey>/` and set `demoAvailable: true`.
 - **`assets`** — 3D model showcase (e.g. Sketchfab). Add an object with `title`, `meta`, `image`, `link`.
 

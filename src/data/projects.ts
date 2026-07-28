@@ -8,6 +8,7 @@ export const projects: ProjectItem[] = [
     meta: "computer vision · C++ · OpenCV",
     description: "Homography calibration for billiard table tracking using computer vision.",
     stack: ["C++", "OpenCV"],
+    scope: "personal",
     status: "in development",
   },
   {
@@ -16,6 +17,7 @@ export const projects: ProjectItem[] = [
     meta: "automated rigging · PyTorch · GNN",
     description: "A graph neural network system that automates character rigging from mesh data.",
     stack: ["Python", "PyTorch"],
+    scope: "personal",
     status: "in development",
   },
 ];

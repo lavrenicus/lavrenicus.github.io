@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { ProjectItem } from "@/types";
 
@@ -13,6 +14,7 @@ export function calculateTilt(rect: DOMRect, x: number, y: number) {
 export default function ProjectCard({ project, index }: { project: ProjectItem; index: number }) {
   const card = useRef<HTMLElement>(null);
   const frame = useRef(0);
+  const links = [...(project.link ? [{ href: project.link, label: project.linkLabel ?? "view" }] : []), ...(project.links ?? [])];
 
   const move = (event: React.PointerEvent<HTMLElement>) => {
     if (matchMedia("(hover: none), (prefers-reduced-motion: reduce)").matches) return;
@@ -39,11 +41,22 @@ export default function ProjectCard({ project, index }: { project: ProjectItem; 
       onPointerLeave={reset}
       className="glass-card project-tilt rounded-xl p-4"
     >
-      <div className="mb-3 flex items-center justify-between">
+      <div className="mb-3 flex items-center justify-between gap-2">
         <span className="micro-label text-text-dim">record / {String(index).padStart(2, "0")}</span>
-        {project.status && <span className="micro-label text-accent">{project.status}</span>}
+        <div className="flex items-center gap-2">
+          <span className="micro-label text-text-dim">{project.scope}</span>
+          {project.status && <span className="micro-label text-accent">{project.status}</span>}
+        </div>
       </div>
       <h3 className="mb-2 text-lg font-semibold leading-tight tracking-tight">{project.title}</h3>
+      {(project.period ?? project.year) && <p className="micro-label mb-2 text-text-dim">{project.period ?? project.year}</p>}
+      {project.images && (
+        <div className="mb-4 grid grid-cols-2 gap-2">
+          {project.images.map((image) => (
+            <Image key={image.src} src={image.src} alt={image.alt} width={620} height={349} className="h-auto rounded border border-white/10" />
+          ))}
+        </div>
+      )}
       <p className="mb-3 font-mono text-[9px] font-light uppercase leading-relaxed tracking-wider text-accent">{project.meta}</p>
       <p className="mb-4 text-[13px] leading-relaxed text-text-dim">{project.description}</p>
       <div className="flex flex-wrap gap-1.5">
@@ -53,16 +66,13 @@ export default function ProjectCard({ project, index }: { project: ProjectItem; 
           </span>
         ))}
       </div>
-      {project.link && (
-        <a
-          href={project.link}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-4 inline-block font-mono text-[11px] text-accent hover:underline"
-        >
-          {project.linkLabel ?? "view"} →
-        </a>
-      )}
+      <div className="flex flex-wrap gap-x-3">
+        {links.map(({ href, label }) => (
+          <a key={href} href={href} target="_blank" rel="noopener noreferrer" className="mt-4 font-mono text-[11px] text-accent hover:underline">
+            {label} →
+          </a>
+        ))}
+      </div>
     </article>
   );
 }

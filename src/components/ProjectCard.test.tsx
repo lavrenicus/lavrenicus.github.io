@@ -1,5 +1,5 @@
 import { beforeEach, expect, test, vi } from "vitest";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import ProjectCard, { calculateTilt } from "./ProjectCard";
 
 const project = {
@@ -9,6 +9,10 @@ const project = {
   description: "Description",
   stack: ["TypeScript"],
   scope: "personal" as const,
+  year: 2014,
+  period: "2014–2016",
+  images: [{ src: "/images/demo.png", alt: "Demo screenshot" }],
+  links: [{ href: "https://example.com/details", label: "Details" }],
 };
 
 beforeEach(() => {
@@ -27,6 +31,14 @@ beforeEach(() => {
 test("calculates a subtle bounded tilt", () => {
   const rect = new DOMRect(10, 20, 100, 200);
   expect(calculateTilt(rect, 110, 20)).toEqual({ x: 2.5, y: 2.5 });
+});
+
+test("renders project date, scope and screenshots", () => {
+  render(<ProjectCard project={project} index={1} />);
+  expect(screen.getByText("2014–2016")).toBeInTheDocument();
+  expect(screen.getByText("personal")).toBeInTheDocument();
+  expect(screen.getByRole("img", { name: "Demo screenshot" })).toHaveAttribute("src", expect.stringContaining("demo.png"));
+  expect(screen.getByRole("link", { name: "Details →" })).toHaveAttribute("href", "https://example.com/details");
 });
 
 test("applies and resets pointer tilt", async () => {

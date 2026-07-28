@@ -1,12 +1,16 @@
 ﻿export interface ProjectItem {
   id: string;
   title: string;
+  year?: number;
+  period?: string;
   meta: string;
   description: string;
   stack: string[];
   scope: "personal" | "team";
+  images?: { src: string; alt: string }[];
   link?: string;
   linkLabel?: string;
+  links?: { href: string; label: string }[];
   status?: string;
 }
 

@@ -13,10 +13,10 @@ test("switches sections and updates breadcrumbs", async () => {
   const user = userEvent.setup();
   render(<PortfolioApp />);
 
-  await user.click(screen.getByRole("button", { name: "projects" }));
+  await user.click(screen.getByRole("button", { name: "experience" }));
 
-  expect(screen.getByRole("heading", { name: "Projects" })).toBeInTheDocument();
-  expect(screen.getAllByText("projects").some((node) => node.getAttribute("aria-current") === "page")).toBe(true);
+  expect(screen.getByRole("heading", { name: "Experience" })).toBeInTheDocument();
+  expect(screen.getAllByText("experience").some((node) => node.getAttribute("aria-current") === "page")).toBe(true);
   const panel = screen.getByTestId("content-panel");
   expect(panel).toHaveClass("lg:ml-[4vw]", "lg:mr-[26vw]");
   expect(panel.firstElementChild).toHaveClass("section-enter");

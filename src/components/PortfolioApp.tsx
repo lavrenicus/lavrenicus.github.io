@@ -4,7 +4,7 @@ import GridOverlay from "./GridOverlay";
 import Header from "./Header";
 import Breadcrumbs from "./Breadcrumbs";
 import Hero from "./Hero";
-import Projects from "./Projects";
+import Experience from "./Experience";
 import Games from "./Games";
 import Assets from "./Assets";
 import TechGrid from "./TechGrid";
@@ -16,7 +16,7 @@ export type SectionProps = { onNavigate?: (key: string) => void };
 
 const SECTIONS: Record<string, ComponentType<SectionProps>> = {
   home: Hero,
-  projects: Projects,
+  experience: Experience,
   games: Games,
   assets: Assets,
   tech: TechGrid,

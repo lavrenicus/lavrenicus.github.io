@@ -18,7 +18,7 @@ export default function Hero({ onNavigate }: { onNavigate?: (key: string) => voi
             Based in Thailand, working across Python, Unity and Babylon.js.
           </p>
           <div className="flex flex-wrap gap-3">
-            <button onClick={() => onNavigate?.("projects")} className="edge-hover rounded-lg border border-accent bg-accent px-5 py-3 font-mono text-[11px] tracking-wider text-bg">
+            <button onClick={() => onNavigate?.("experience")} className="edge-hover rounded-lg border border-accent bg-accent px-5 py-3 font-mono text-[11px] tracking-wider text-bg">
             view my work
             </button>
             <button onClick={() => onNavigate?.("games")} className="edge-hover rounded-lg border border-white/15 bg-white/[.025] px-5 py-3 font-mono text-[11px] tracking-wider text-text">

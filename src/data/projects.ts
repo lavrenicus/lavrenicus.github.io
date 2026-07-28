@@ -222,7 +222,7 @@ export const techSkills: TechSkill[] = [
 
 export const navLinks: NavLink[] = [
   { label: "home", href: "home" },
-  { label: "projects", href: "projects" },
+  { label: "experience", href: "experience" },
   { label: "games", href: "games" },
   { label: "assets", href: "assets" },
   { label: "tech", href: "tech" },

@@ -1,11 +1,13 @@
 import { expect, test } from "vitest";
 import { render, screen, within } from "@testing-library/react";
-import Projects from "./Projects";
+import Experience from "./Experience";
 
 test("lists each project with its own scope", () => {
-  render(<Projects />);
+  render(<Experience />);
   const cards = screen.getAllByRole("article");
 
+  expect(screen.getByRole("heading", { name: "Experience" })).toBeInTheDocument();
+  expect(screen.getByText("01 / roles & projects")).toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "personal projects" })).not.toBeInTheDocument();
   expect(screen.queryByRole("heading", { name: "team projects" })).not.toBeInTheDocument();
   expect(within(cards[0]).getByText("Sharks vs Dolphins: Underwater Battle Checkers")).toBeInTheDocument();

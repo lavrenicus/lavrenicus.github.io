@@ -41,9 +41,9 @@ export default function ProjectCard({ project, index }: { project: ProjectItem; 
       onPointerLeave={reset}
       className="glass-card project-tilt rounded-xl p-4"
     >
-      <div className="mb-3 flex items-center justify-between gap-2">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <span className="micro-label text-text-dim">record / {String(index).padStart(2, "0")}</span>
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <span className="micro-label text-text-dim">{project.scope}</span>
           {project.status && <span className="micro-label text-accent">{project.status}</span>}
         </div>
@@ -57,7 +57,7 @@ export default function ProjectCard({ project, index }: { project: ProjectItem; 
           ))}
         </div>
       )}
-      <p className="mb-3 font-mono text-[9px] font-light uppercase leading-relaxed tracking-wider text-accent">{project.meta}</p>
+      <p className="mb-3 break-words font-mono text-[9px] font-light uppercase leading-relaxed tracking-wider text-accent">{project.meta}</p>
       <p className="mb-4 text-[13px] leading-relaxed text-text-dim">{project.description}</p>
       <div className="flex flex-wrap gap-1.5">
         {project.stack.map((item) => (

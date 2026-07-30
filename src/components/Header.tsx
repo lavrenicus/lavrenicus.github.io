@@ -10,7 +10,6 @@ export default function Header({
   onNavigate: (key: string) => void;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const go = (key: string) => {
     onNavigate(key);
     setMobileOpen(false);
@@ -21,7 +20,7 @@ export default function Header({
       <div className="flex h-14 items-center justify-between px-4 sm:px-7">
         <button
           onClick={() => go("home")}
-          className="font-mono text-[11px] font-light tracking-[0.2em] text-text"
+          className="font-mono text-[11px] font-light tracking-[0.12em] text-text sm:tracking-[0.2em]"
           aria-label="Go to home"
         >
           LAVRENICUS<span className="text-accent">_</span>
@@ -58,21 +57,32 @@ export default function Header({
       </div>
 
       {mobileOpen && (
-        <nav className="glass-shell absolute inset-x-3 top-[calc(100%+8px)] rounded-xl p-2 font-mono text-xs md:hidden" aria-label="Mobile">
-          {navLinks.map((link) => (
-            <button
-              key={link.href}
-              onClick={() => go(link.href)}
-              aria-current={active === link.href ? "page" : undefined}
-              className={
-                "block w-full rounded-lg border border-transparent px-3 py-2.5 text-left lowercase tracking-wider " +
-                (active === link.href ? "border-white/10 text-accent" : "text-text-dim hover:text-text")
-              }
-            >
-              {link.label}
-            </button>
-          ))}
-        </nav>
+        <>
+          <button
+            type="button"
+            aria-label="Close navigation"
+            className="fixed inset-0 z-20 bg-black/45 md:hidden"
+            onClick={() => setMobileOpen(false)}
+          />
+          <nav
+            className="glass-shell absolute inset-x-3 top-[calc(100%+8px)] z-30 rounded-xl bg-[#080b12]/95 p-2 font-mono text-xs shadow-2xl md:hidden"
+            aria-label="Mobile"
+          >
+            {navLinks.map((link) => (
+              <button
+                key={link.href}
+                onClick={() => go(link.href)}
+                aria-current={active === link.href ? "page" : undefined}
+                className={
+                  "block w-full rounded-lg border border-transparent px-3 py-2.5 text-left lowercase tracking-wider " +
+                  (active === link.href ? "border-white/10 text-accent" : "text-text-dim hover:text-text")
+                }
+              >
+                {link.label}
+              </button>
+            ))}
+          </nav>
+        </>
       )}
     </header>
   );

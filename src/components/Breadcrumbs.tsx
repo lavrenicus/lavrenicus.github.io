@@ -11,7 +11,7 @@ export default function Breadcrumbs({
   const current = navLinks.find((l) => l.href === active);
 
   return (
-    <div className="relative z-10 shrink-0 px-4 py-2 sm:px-7">
+    <div className="relative z-10 hidden shrink-0 px-4 py-2 sm:px-7 md:block">
       <div className="flex items-center gap-1.5 font-mono text-[10px] font-light tracking-[0.16em] text-text-dim">
         <span aria-hidden="true">~</span>
         <button onClick={() => onNavigate("home")} className="transition-colors hover:text-text">

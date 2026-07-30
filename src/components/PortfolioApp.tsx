@@ -38,14 +38,14 @@ export default function PortfolioApp() {
   }, []);
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-bg">
+    <div className="flex h-dvh flex-col overflow-hidden bg-bg pb-[env(safe-area-inset-bottom)]">
       <GridOverlay dimmed={active === "games"} pulseSignal={pulseSignal} />
       <Header active={active} onNavigate={navigate} />
       <Breadcrumbs active={active} onNavigate={navigate} />
       <main
         ref={mainRef}
         data-testid="content-panel"
-        className="glass-shell panel-scroll relative z-10 mx-3 min-h-0 flex-1 overflow-y-auto rounded-[22px] sm:mx-5 lg:ml-[4vw] lg:mr-[26vw] lg:max-w-[1120px]"
+        className="glass-shell panel-scroll relative z-10 mx-2 min-h-0 flex-1 overflow-y-auto rounded-[18px] sm:mx-5 sm:rounded-[22px] lg:ml-[4vw] lg:mr-[26vw] lg:max-w-[1120px]"
       >
         <div key={active} className="section-enter">
           <ActiveSection onNavigate={navigate} />

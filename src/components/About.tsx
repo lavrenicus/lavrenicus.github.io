@@ -13,7 +13,7 @@
             Background in VFX and animation studio pipelines, motion capture, and
             render farm management.
           </p>
-          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 font-mono text-[10px]">
+          <dl className="grid gap-px overflow-hidden rounded-xl border border-white/10 bg-white/10 font-mono text-[10px] min-[420px]:grid-cols-2">
             <div className="bg-[#0b0b0f] p-3">
               <dt className="mb-1 text-text-dim">base</dt>
               <dd className="m-0 text-text">Hua Hin, Thailand</dd>

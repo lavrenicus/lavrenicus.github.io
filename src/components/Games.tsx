@@ -15,7 +15,7 @@ export default function Games() {
         <h2 className="section-title">Playable demos</h2>
       </header>
       <div className="glass-card grid gap-3 rounded-2xl p-3 md:grid-cols-[210px_minmax(0,1fr)]">
-        <div className="flex gap-2 overflow-x-auto md:flex-col" role="tablist" aria-label="Select a demo">
+        <div className="flex flex-col gap-2" role="tablist" aria-label="Select a demo">
           {DEMOS.map((demo) => (
             <button
               key={demo.id}
@@ -23,7 +23,7 @@ export default function Games() {
               aria-selected={active === demo.demoKey}
               aria-controls="demo-player"
               className={
-                "edge-hover min-w-40 rounded-lg border px-3 py-3 text-left font-mono text-[10px] font-light tracking-wide md:min-w-0 " +
+                "edge-hover rounded-lg border px-3 py-3 text-left font-mono text-[10px] font-light tracking-wide " +
                 (active === demo.demoKey
                   ? "border-accent-dim bg-accent/[.06] text-accent"
                   : "border-white/10 bg-white/[.025] text-text-dim hover:text-text")

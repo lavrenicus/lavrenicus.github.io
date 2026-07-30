@@ -16,6 +16,7 @@ test("switches the embedded WebGL build with accessible tabs", async () => {
   render(<Games />);
 
   expect(screen.getByRole("tab", { name: "Demo One" })).toHaveAttribute("aria-selected", "true");
+  expect(screen.getByRole("tablist")).toHaveClass("flex-col");
   expect(screen.getByTitle("Demo One playable demo")).toHaveAttribute("src", "/demos/one/index.html");
 
   await user.click(screen.getByRole("tab", { name: "Demo Two" }));

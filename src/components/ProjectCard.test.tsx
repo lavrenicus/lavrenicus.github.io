@@ -34,9 +34,11 @@ test("calculates a subtle bounded tilt", () => {
 });
 
 test("renders project date, scope and screenshots", () => {
-  render(<ProjectCard project={project} index={1} />);
+  const { container } = render(<ProjectCard project={project} index={1} />);
   expect(screen.getByText("2014–2016")).toBeInTheDocument();
   expect(screen.getByText("personal")).toBeInTheDocument();
+  expect(container.querySelector("article > div")).toHaveClass("flex-wrap");
+  expect(screen.getByText("WebGL")).toHaveClass("break-words");
   expect(screen.getByRole("img", { name: "Demo screenshot" })).toHaveAttribute("src", expect.stringContaining("demo.png"));
   expect(screen.getByRole("link", { name: "Details →" })).toHaveAttribute("href", "https://example.com/details");
 });

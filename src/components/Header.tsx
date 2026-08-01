@@ -65,7 +65,7 @@ export default function Header({
             onClick={() => setMobileOpen(false)}
           />
           <nav
-            className="glass-shell absolute inset-x-3 top-[calc(100%+8px)] z-30 rounded-xl bg-[#080b12]/95 p-2 font-mono text-xs shadow-2xl md:hidden"
+            className="glass-shell absolute inset-x-3 top-[calc(100%+8px)] z-30 rounded-xl bg-[#080b12] p-2 font-mono text-xs shadow-2xl md:hidden"
             aria-label="Mobile"
           >
             {navLinks.map((link) => (

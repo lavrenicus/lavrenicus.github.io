@@ -100,9 +100,13 @@ export default function RunnerBackground({
     sendTheme(themeKey);
   }, [themeKey, enabled, sendTheme]);
 
+  // Background off → NO placeholder at all: the reserved band/strip must
+  // not leave an empty gap (the owner's layout has no fullscreen layer).
+  if (!enabled) return null;
+
   return (
     <div className="runner-backdrop" data-testid="runner-backdrop" aria-hidden="true">
-      {enabled && mounted && (
+      {mounted && (
         <iframe
           ref={frameRef}
           data-testid="runner-frame"

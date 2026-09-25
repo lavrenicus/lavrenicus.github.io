@@ -49,12 +49,34 @@ a:focus-visible {
   outline-offset: 4px;
 }
 
+/* Runner placement (owner, 2026-09-25): NOT a fullscreen background —
+   stacked layout (narrow): a band ABOVE the content panel; lg+: a strip in
+   the free space RIGHT of the panel (exactly its reserved lg:mr-[26vw]). */
 .runner-backdrop {
-  position: fixed;
-  inset: 0;
+  position: relative;
+  order: -1; /* above the panel while the row is stacked */
+  flex: none;
   width: 100%;
-  height: 100%;
+  height: clamp(170px, 32vh, 360px);
   z-index: 0;
+}
+
+@media (min-width: 1024px) {
+  .runner-backdrop {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    /* ADAPTIVE: the left edge is ALWAYS exactly the panel's right edge —
+       min(4vw + panel max-width, space left after the panel's 26vw gutter)
+       — zero dead space between the content and the game at any window
+       width (a fixed 26vw strip left a growing gap once the panel hit
+       its 1120px cap, i.e. wider than ~1600px). */
+    left: min(calc(4vw + 1120px), calc(100% - 26vw));
+    order: 0;
+    width: auto;
+    height: auto;
+  }
 }
 
 .runner-backdrop iframe {

@@ -71,11 +71,6 @@ export default function Shell({ children }: { children: ReactNode }) {
   return (
     <TheaterContext.Provider value={{ theater, setTheater }}>
       <div className="flex h-dvh flex-col overflow-hidden bg-bg pb-[env(safe-area-inset-bottom)]">
-        <RunnerBackground
-          themeKey={section}
-          enabled={bgEnabled}
-          onError={() => setBgError(true)}
-        />
         {theater && (
           <div
             data-testid="theater-backdrop"
@@ -85,18 +80,28 @@ export default function Shell({ children }: { children: ReactNode }) {
         )}
         <Header />
         <Breadcrumbs />
-        <main
-          ref={mainRef}
-          data-testid="content-panel"
-          className={
-            "glass-shell panel-scroll relative mx-2 min-h-0 flex-1 overflow-y-auto rounded-[18px] sm:mx-5 sm:rounded-[22px] lg:ml-[4vw] lg:mr-[26vw] lg:max-w-[1120px] " +
-            (theater ? "z-40" : "z-10")
-          }
-        >
-          <div key={path} className="section-enter">
-            {children}
-          </div>
-        </main>
+        {/* Content row: the panel takes the width it needs; the runner lives
+            in the space around it (owner: right of the content where there
+            is room, above it where there is none — see .runner-backdrop). */}
+        <div className="relative flex min-h-0 flex-1 flex-col lg:flex-row">
+          <main
+            ref={mainRef}
+            data-testid="content-panel"
+            className={
+              "glass-shell panel-scroll relative mx-2 min-h-0 flex-1 overflow-y-auto rounded-[18px] sm:mx-5 sm:rounded-[22px] lg:ml-[4vw] lg:mr-[26vw] lg:max-w-[1120px] " +
+              (theater ? "z-40" : "z-10")
+            }
+          >
+            <div key={path} className="section-enter">
+              {children}
+            </div>
+          </main>
+          <RunnerBackground
+            themeKey={section}
+            enabled={bgEnabled}
+            onError={() => setBgError(true)}
+          />
+        </div>
         <Footer bgEnabled={bgEnabled} bgError={bgError} onBgToggle={toggleBg} />
       </div>
     </TheaterContext.Provider>

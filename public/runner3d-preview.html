@@ -56,7 +56,8 @@
   </script>
   <script type="module">
 import * as THREE from "three";
-import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+import { KTX2Loader } from "three/addons/loaders/KTX2Loader.js";
 import { CorridorGenerator } from "corridor-gen";
 
 // ── site embed hook (?embed): the deployed site embeds this page as its
@@ -73,7 +74,7 @@ const embedPost = (msg) => {
 
 /*
  * SELF-PLAYING RUNNER — SIDE VIEW (visual spec Р1, corrected 2026-09-24):
- * the character is the owner's original model (models/Lavr.fbx) and runs on
+ * the character is the owner's original model (models/Lavr.glb) and runs on
  * autopilot — jumps obstacles BY ITSELF, ZERO player input (no tap, no keys);
  * the world flows LEFT (side-scroller convention: the runner faces right).
  * The 7 themes are locations; on the site they switch per section.
@@ -212,8 +213,8 @@ const JUMP_V = 4.6;
 const OBSTACLE_W = 0.4;
 const OBSTACLE_H = 0.55;
 
-let character = null; // owner's model root (models/Lavr.fbx), feet on floor at CHAR_X
-let mixer = null;     // AnimationMixer — only if the FBX carries its own clips
+let character = null; // owner's model root (models/Lavr.glb), feet on floor at CHAR_X
+let mixer = null;     // AnimationMixer — only if the GLB carries its own clips
 let charGroundY = 0;
 let grounded = true;
 let velocityY = 0;
@@ -264,7 +265,7 @@ function setupRig(model) {
   const missing = Object.keys(RIG).filter((n) => !byName[n]);
   if (missing.length > 0) {
     // explicit failure, no substitute animation: log loudly, character stays static
-    console.error("Lavr.fbx: rig bones missing — parametric run not applied:", missing.join(", "));
+    console.error("Lavr.glb: rig bones missing — parametric run not applied:", missing.join(", "));
     return;
   }
   // T-pose arms hang ~15° off the body, not out at shoulder height
@@ -276,25 +277,31 @@ function setupRig(model) {
     bone.updateWorldMatrix(true, false);
     const p = new THREE.Vector3().setFromMatrixPosition(bone.matrixWorld);
     const child = bone.children.find((c) => c.isBone);
-    if (!child) { console.error("Lavr.fbx: no child bone for", name); continue; }
+    if (!child) { console.error("Lavr.glb: no child bone for", name); continue; }
     const c = new THREE.Vector3().setFromMatrixPosition(child.matrixWorld);
     const boneDir = c.sub(p).normalize();
     const axisW = boneDir.clone().cross(runDir);
-    if (axisW.lengthSq() < 1e-10) { console.error("Lavr.fbx: degenerate swing axis for", name); continue; }
+    if (axisW.lengthSq() < 1e-10) { console.error("Lavr.glb: degenerate swing axis for", name); continue; }
     axisW.normalize();
     // scale-immune extraction — same reason as in preRotateWorld
     bone.parent.matrixWorld.decompose(_vp, _qb, _vs);
     const axisP = axisW.applyQuaternion(_qb.invert()); // world axis → parent frame
     bones.push({ bone, kind, axisP, q0: bone.quaternion.clone() });
   }
-  console.log(`Lavr.fbx: parametric rig active on ${bones.length} bones`);
+  console.log(`Lavr.glb: parametric rig active on ${bones.length} bones`);
 }
 
-new FBXLoader().load(
-  "/models/Lavr.fbx",
-  (model) => {
-    // Owner verdict: at 0 the native front (+z) faces the camera —
-    // π/2 turns it profile-right (+x), the side-scroller direction.
+// KTX2/BasisU textures (gltfpack -tc): transcoder from the same CDN as three
+const ktx2 = new KTX2Loader()
+  .setTranscoderPath("https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/libs/basis/")
+  .detectSupport(R);
+new GLTFLoader().setKTX2Loader(ktx2).load(
+  "/models/Lavr.glb",
+  (gltf) => {
+    const model = gltf.scene;
+    model.animations = gltf.animations || [];
+    // Owner verdict (silhouette-verified vs FBX, IoU = 1.0): at π/2 the
+    // profile faces right (+x), the side-scroller direction.
     model.rotation.y = Math.PI / 2;
     model.updateMatrixWorld(true);
     // Fit by SKELETON bones: the skinned surface follows the bones, so the
@@ -305,11 +312,11 @@ new FBXLoader().load(
     });
     const size = box.getSize(new THREE.Vector3());
     if (!(size.y > 0)) {
-      console.error("Lavr.fbx: empty skeleton box — model unusable");
-      embedPost({ type: "error", message: "Lavr.fbx: empty skeleton box — see console" });
+      console.error("Lavr.glb: empty skeleton box — model unusable");
+      embedPost({ type: "error", message: "Lavr.glb: empty skeleton box — see console" });
       const el = document.getElementById("loading");
       el.style.display = "flex";
-      el.innerText = "fbx error — see console";
+      el.innerText = "glb error — see console";
       return;
     }
     const s = CHAR_TARGET_H / size.y;
@@ -322,9 +329,9 @@ new FBXLoader().load(
     if (model.animations && model.animations.length > 0) {
       mixer = new THREE.AnimationMixer(model);
       mixer.clipAction(model.animations[0]).play();
-      console.log(`Lavr.fbx: playing clip "${model.animations[0].name}"`);
+      console.log(`Lavr.glb: playing clip "${model.animations[0].name}"`);
     } else {
-      console.log("Lavr.fbx: no clips in file — static pose with physics (jump/bob)");
+      console.log("Lavr.glb: no clips in file — static pose with physics (jump/bob)");
     }
     scene.add(model);
     character = model;
@@ -332,11 +339,11 @@ new FBXLoader().load(
   undefined,
   (err) => {
     // explicit failure, no substitute character: visible status + log
-    console.error("Lavr.fbx failed to load", err);
-    embedPost({ type: "error", message: "Lavr.fbx failed to load — see console" });
+    console.error("Lavr.glb failed to load", err);
+    embedPost({ type: "error", message: "Lavr.glb failed to load — see console" });
     const el = document.getElementById("loading");
     el.style.display = "flex";
-    el.innerText = "fbx load failed — see console";
+    el.innerText = "glb load failed — see console";
   },
 );
 

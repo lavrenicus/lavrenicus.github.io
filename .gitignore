@@ -47,7 +47,7 @@ __pycache__/
 # models/: only the locked character deploys (deploy copy); the rest of the
 # directory is dev-only pipeline assets (samples, experiments, PBR sources)
 /public/models/*
-!/public/models/Lavr.fbx
+!/public/models/Lavr.glb
 
 # local audit artifacts (Lighthouse reports are evidence, not source)
 lighthouse-*.json

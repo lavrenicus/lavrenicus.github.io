@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img">
+  <title>Металлическая решётка пола коридора (бесшовная)</title>
+  <defs>
+    <!--
+      Seamless uniform grate. The 64x64 cell divides 512 exactly (8x8).
+      All elements are filled rects INSIDE the cell (no strokes crossing
+      boundaries, no gradients, no filters) => mathematically zero seam.
+      Owner's texture order 2026-09-24: non-uniform tiles caused moire.
+    -->
+    <pattern id="grateCell" width="64" height="64" patternUnits="userSpaceOnUse">
+      <rect x="7" y="7" width="50" height="50" fill="#171b22"/>
+      <rect x="7" y="7" width="50" height="4" fill="#2b313c"/>
+      <rect x="7" y="53" width="50" height="4" fill="#11141a"/>
+      <rect x="7" y="11" width="4" height="42" fill="#262b35"/>
+      <rect x="53" y="11" width="4" height="42" fill="#11141a"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="#21252d"/>
+  <rect width="512" height="512" fill="url(#grateCell)"/>
+</svg>

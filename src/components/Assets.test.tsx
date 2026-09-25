@@ -18,5 +18,7 @@ test("renders every Sketchfab asset with its cover and link", () => {
     expect.stringContaining("Sci-fi Girl"),
   ]));
   expect(cards[0]).toHaveAttribute("href", expect.stringContaining("f4c18c0c955a46d8b7327091725a915e"));
-  expect(cards[0].firstElementChild).toHaveStyle({ backgroundImage: "url(/images/sketchfab/sci-fi-corridor.jpg)" });
+  const cover = cards[0].querySelector("img");
+  expect(cover).toHaveAttribute("src", expect.stringContaining("sci-fi-corridor.jpg"));
+  expect(cover).toHaveAttribute("alt", expect.stringContaining("Corridor"));
 });

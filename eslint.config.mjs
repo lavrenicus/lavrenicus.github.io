@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Generated demo build artifacts (compiled bundles, not source):
+    "public/demos/**",
   ]),
 ]);
 

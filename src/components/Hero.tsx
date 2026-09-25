@@ -1,4 +1,6 @@
-export default function Hero({ onNavigate }: { onNavigate?: (key: string) => void }) {
+import Link from "next/link";
+
+export default function Hero() {
   const terminalCode = "> import pipeline\n> render.optimize()\n> deploy(target=\"web\")\n> status: ready_";
 
   return (
@@ -18,12 +20,12 @@ export default function Hero({ onNavigate }: { onNavigate?: (key: string) => voi
             Based in Thailand, working across Python, Unity and Babylon.js.
           </p>
           <div className="flex flex-col gap-2 min-[390px]:flex-row min-[390px]:gap-3">
-            <button onClick={() => onNavigate?.("experience")} className="edge-hover rounded-lg border border-accent bg-accent px-5 py-3 font-mono text-[11px] tracking-wider text-bg">
+            <Link href="/experience" className="edge-hover rounded-lg border border-accent bg-accent px-5 py-3 font-mono text-[11px] tracking-wider text-bg">
             view my work
-            </button>
-            <button onClick={() => onNavigate?.("games")} className="edge-hover rounded-lg border border-white/15 bg-white/[.025] px-5 py-3 font-mono text-[11px] tracking-wider text-text">
+            </Link>
+            <Link href="/games" className="edge-hover rounded-lg border border-white/15 bg-white/[.025] px-5 py-3 font-mono text-[11px] tracking-wider text-text">
             play demos
-            </button>
+            </Link>
           </div>
         </div>
         <aside className="glass-card rounded-xl p-1">

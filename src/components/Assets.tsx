@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { assets } from "@/data/projects";
 
 export default function Assets() {
@@ -16,11 +17,15 @@ export default function Assets() {
             rel="noopener noreferrer"
             className="glass-card edge-hover group overflow-hidden rounded-xl"
           >
-            <div
-              className="relative aspect-square border-b border-white/10 bg-cover bg-center"
-              style={{ backgroundImage: `url(${asset.image})` }}
-            >
-              <span className="micro-label absolute left-3 top-3 text-text-dim">
+            <div className="relative aspect-square border-b border-white/10 bg-cover bg-center">
+              <Image
+                src={asset.image}
+                alt={asset.title}
+                fill
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+              />
+              <span className="micro-label absolute left-3 top-3 z-10 text-text-dim">
                 model / {String(index + 1).padStart(2, "0")}
               </span>
             </div>

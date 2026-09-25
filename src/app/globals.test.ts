@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
-const css = readFileSync("src/app/globals.css", "utf8");
+const css = readFileSync("src/app/globals.css", "utf8").replace(/\r\n/g, "\n");
 
 test("renders opaque glass with blur and highlights", () => {
   expect(css).toMatch(/\.glass-shell[\s\S]*rgb\(8 11 18 \/ 0\.88\)[\s\S]*-webkit-backdrop-filter: blur\(22px\)/);

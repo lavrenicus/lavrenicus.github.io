@@ -1,12 +1,52 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { games } from "@/data/projects";
+import { useTheater } from "./theater-context";
 
 const DEMOS = games;
 
 export default function Games() {
   const [active, setActive] = useState(DEMOS[0].demoKey);
+  const [inFullscreen, setInFullscreen] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState(false);
+  const { theater, setTheater } = useTheater();
+  const frameRef = useRef<HTMLIFrameElement>(null);
   const selected = DEMOS.find((demo) => demo.demoKey === active) ?? DEMOS[0];
+  const fullscreenSupported =
+    typeof document !== "undefined" && document.fullscreenEnabled === true;
+  const theaterOn = Boolean(theater);
+
+  useEffect(() => {
+    const onChange = () => setInFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  useEffect(() => {
+    if (!theaterOn) return;
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setTheater(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [theaterOn, setTheater]);
+
+  const toggleFullscreen = async () => {
+    if (!fullscreenSupported) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        const frame = frameRef.current;
+        if (!frame) throw new Error("demo iframe element is missing");
+        await frame.requestFullscreen();
+      }
+      setFullscreenError(false);
+    } catch (error) {
+      console.error("fullscreen request failed:", error);
+      setFullscreenError(true);
+    }
+  };
 
   return (
     <section id="games" className="section-frame">
@@ -35,10 +75,49 @@ export default function Games() {
           ))}
         </div>
 
-        <div id="demo-player" role="tabpanel" className="relative min-h-52 overflow-hidden rounded-xl border border-white/10 bg-black/40">
+        <div
+          id="demo-player"
+          role="tabpanel"
+          className="relative min-h-52 overflow-hidden rounded-xl border border-white/10 bg-black/40"
+        >
+          <div className="absolute right-2 top-2 z-10 flex gap-1.5">
+            <button
+              type="button"
+              aria-pressed={theaterOn}
+              title={
+                theaterOn
+                  ? "exit theater mode (esc)"
+                  : "theater mode: dim everything but the demo (esc exits)"
+              }
+              onClick={() => setTheater(!theaterOn)}
+              className="edge-hover rounded border border-white/15 bg-black/60 px-2 py-1 micro-label text-text-dim hover:text-text"
+            >
+              {theaterOn ? "exit theater" : "theater"}
+            </button>
+            <button
+              type="button"
+              disabled={!fullscreenSupported}
+              aria-label={inFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
+              title={
+                fullscreenSupported
+                  ? "fullscreen (esc exits)"
+                  : "fullscreen unavailable on this platform"
+              }
+              onClick={toggleFullscreen}
+              className="edge-hover rounded border border-white/15 bg-black/60 px-2 py-1 micro-label text-text-dim hover:text-text disabled:cursor-not-allowed disabled:opacity-45"
+            >
+              {inFullscreen ? "exit fullscreen" : "fullscreen"}
+            </button>
+          </div>
+          {fullscreenError && (
+            <span className="micro-label absolute left-2 top-2 z-10 text-red-400" role="status">
+              fullscreen error
+            </span>
+          )}
           {selected.demoAvailable ? (
             <iframe
               key={active}
+              ref={frameRef}
               src={"/demos/" + active + "/index.html"}
               title={selected.title + " playable demo"}
               loading="lazy"

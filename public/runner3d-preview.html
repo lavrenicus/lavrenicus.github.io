@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>corridor runner preview</title>
+<style>
+  :root { color-scheme: dark; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #030508; overflow: hidden; font-family: ui-monospace, monospace; }
+  canvas { display: block; width: 100vw; height: 100vh; }
+  .hud {
+    position: fixed; left: 16px; top: 14px; z-index: 10; pointer-events: none;
+    color: rgba(255,255,255,0.55); font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    display: flex; flex-direction: column; gap: 5px;
+  }
+  .hud .sec { font-size: 13px; font-weight: 600; letter-spacing: 0.18em; }
+  .bar {
+    position: fixed; left: 16px; bottom: 16px; z-index: 10;
+    display: flex; gap: 8px; background: rgba(8,11,18,0.72);
+    border: 1px solid rgba(255,255,255,0.14); border-radius: 10px; padding: 8px 10px;
+    backdrop-filter: blur(10px);
+  }
+  .bar button {
+    width: 30px; height: 30px; border-radius: 6px; border: 1.5px solid rgba(255,255,255,0.22);
+    background: var(--c); cursor: pointer; transition: transform 0.12s, border-color 0.12s;
+  }
+  .bar button:hover { transform: scale(1.12); }
+  .bar button.on { border-color: #fff; transform: scale(1.18); box-shadow: 0 0 14px var(--c); }
+  #vignette {
+    position: fixed; inset: 0; z-index: 5; pointer-events: none;
+    background:
+      radial-gradient(ellipse 64% 60% at 50% 50%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.45) 80%, rgba(0,0,0,0.95) 100%),
+      linear-gradient(to right, rgba(0,0,0,0.6), rgba(0,0,0,0) 13%, rgba(0,0,0,0) 87%, rgba(0,0,0,0.6));
+    opacity: 1;
+    box-shadow: inset 0 0 150px rgba(0,0,0,0.0);
+    transition: box-shadow 0.18s ease;
+  }
+  body.fx #vignette { box-shadow: inset 0 0 170px rgba(0,0,0,0.85); }
+  /* embed mode (?embed): the site owns the chrome — preview-only UI hidden */
+  body.embed .hud, body.embed .bar { display: none; }
+  #loading { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.6); font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase; z-index: 20; background: #030508; }
+</style>
+</head>
+<body>
+  <div id="loading">loading 3d…</div>
+  <div class="hud"><span class="sec" id="secLabel">home · neon city</span></div>
+  <div class="bar" id="bar"></div>
+  <div id="vignette"></div>
+  <script type="importmap">
+  { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.175.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.175.0/examples/jsm/",
+      "corridor-gen": "./runner/corridor-gen.js"
+  }}
+  </script>
+  <script type="module">
+import * as THREE from "three";
+import { FBXLoader } from "three/addons/loaders/FBXLoader.js";
+import { CorridorGenerator } from "corridor-gen";
+
+// ── site embed hook (?embed): the deployed site embeds this page as its
+// background layer and drives locations over same-origin postMessage.
+// Explicit message shapes only; unknown keys are REFUSED with an error —
+// no substitute path. Standalone preview (no ?embed) behaves exactly as
+// before: no posts, no listeners, chrome visible.
+const EMBED = new URLSearchParams(location.search).has("embed");
+if (EMBED) document.body.classList.add("embed");
+const embedPost = (msg) => {
+  if (!EMBED) return;
+  parent.postMessage({ src: "runner3d", ...msg }, location.origin);
+};
+
+/*
+ * SELF-PLAYING RUNNER — SIDE VIEW (visual spec Р1, corrected 2026-09-24):
+ * the character is the owner's original model (models/Lavr.fbx) and runs on
+ * autopilot — jumps obstacles BY ITSELF, ZERO player input (no tap, no keys);
+ * the world flows LEFT (side-scroller convention: the runner faces right).
+ * The 7 themes are locations; on the site they switch per section.
+ */
+
+// ── renderer ──
+const R = new THREE.WebGLRenderer({ antialias: true });
+R.setPixelRatio(Math.min(devicePixelRatio, 2));
+R.setSize(innerWidth, innerHeight);
+R.shadowMap.enabled = true;
+R.shadowMap.type = THREE.PCFSoftShadowMap;
+R.toneMapping = THREE.ACESFilmicToneMapping;
+R.toneMappingExposure = 1.3;
+document.body.appendChild(R.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x05070d);
+
+// ── camera ──
+const cam = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.1, 300);
+cam.position.set(0, 4.5, 18);
+cam.lookAt(0, 1.5, 0);
+addEventListener("resize", () => { cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); R.setSize(innerWidth, innerHeight); resizeDissolve(); });
+
+// ── corridor constants ──
+const CH = 4;
+const CW = 3;
+const SEG = 2;
+const NSEG = 30;
+const SX = -SEG * 6;
+const WORLD_SPEED = 6; // units/sec — time-based, refresh-rate independent
+
+const gen = new CorridorGenerator({
+  CH, CW, SEG, maxAnisotropy: R.capabilities.getMaxAnisotropy(),
+  onError: (message) => embedPost({ type: "error", message }), // texture failures → site status
+});
+
+// ── lights ──
+scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(4, 10, 12);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -35, right: 10, top: 8, bottom: -2, near: 1, far: 50 });
+scene.add(sun);
+const fill = new THREE.PointLight(0xffffff, 0.9, 25);
+fill.position.set(0, CH / 2, 0);
+scene.add(fill);
+
+// ── fog ──
+scene.fog = new THREE.Fog(0x0b1526, 19, 32);
+
+// ── themes ──
+const T = [
+  { key: "home", name: "home · neon city", bg: 0x05070d, fog: 0x0b1526, fogN: 19, fogF: 32,
+    floor: 0x0c1830, ceil: 0x121c2c, back: 0x080e1c, accent: 0x38bdf8,
+  },
+  { key: "experience", name: "experience · factory", bg: 0x0b0805, fog: 0x1d1409, fogN: 19, fogF: 32,
+    floor: 0x261a10, ceil: 0x3a2c1a, back: 0x1e140c, accent: 0xf59e0b,
+  },
+  { key: "games", name: "games · arcade", bg: 0x060810, fog: 0x14202a, fogN: 19, fogF: 32,
+    floor: 0x0e2620, ceil: 0x1c3a30, back: 0x0c201c, accent: 0x34d399,
+  },
+  { key: "assets", name: "assets · gallery", bg: 0x0a0710, fog: 0x1c1430, fogN: 19, fogF: 32,
+    floor: 0x221a38, ceil: 0x342848, back: 0x1e1838, accent: 0xa78bfa,
+  },
+  { key: "tech", name: "tech · code space", bg: 0x020a06, fog: 0x0c2214, fogN: 19, fogF: 32,
+    floor: 0x0c2218, ceil: 0x163322, back: 0x0a1e14, accent: 0x4ade80,
+  },
+  { key: "about", name: "about · blueprint", bg: 0x040a12, fog: 0x12283c, fogN: 19, fogF: 32,
+    floor: 0x12243a, ceil: 0x1e3650, back: 0x0e2038, accent: 0x60a5fa,
+  },
+  { key: "links", name: "links · constellation", bg: 0x05070d, fog: 0x0b1526, fogN: 19, fogF: 32,
+    floor: 0x0c1830, ceil: 0x121c2c, back: 0x080e1c, accent: 0xffffff,
+  }
+];
+
+let currentThemeIdx = 0;
+let segments = [];      // the live corridor set
+let segmentsNext = [];  // incoming set during a two-set wipe (empty otherwise)
+
+function disposeSet(set) {
+  set.forEach(s => {
+    scene.remove(s);
+    s.traverse(o => {
+      // Cached geometry/materials are SHARED — disposing them would drop
+      // GPU buffers other segments reference (owner order: "объекты надо
+      // закешировать"). Only per-build (non-cached) resources are freed.
+      if (o.geometry && !o.geometry.userData.cached) o.geometry.dispose();
+      if (o.material) {
+        const ms = Array.isArray(o.material) ? o.material : [o.material];
+        ms.forEach(m => { if (!m.userData.cached) m.dispose(); });
+      }
+    });
+  });
+}
+
+function buildSegmentSet(themeIdx) {
+  const set = [];
+  for (let i = 0; i < NSEG; i++) {
+    const seg = gen.createDetailedSegment(T[themeIdx], SX + i * SEG);
+    scene.add(seg);
+    set.push(seg);
+  }
+  return set;
+}
+
+function buildCorridor() {
+  const t0 = performance.now();
+  disposeSet(segments);
+  segments = buildSegmentSet(currentThemeIdx);
+  console.log(`[runner] corridor built in ${(performance.now() - t0).toFixed(1)}ms — geo cache ${gen._geoCache.size}, mat cache ${gen._matCache.size}`);
+}
+
+buildCorridor();
+
+// ── foreground parallax layer (owner plan 2026-09-25, sanction "Да, план
+// одобрен": rare dark silhouettes pass IN FRONT of the runner at 1.3x
+// speed — JJ-style depth). Fixed near-black material (no location role),
+// built ONCE: the layer is theme-independent and survives every dissolve
+// and every buildCorridor() (which only rebuilds `segments`).
+const FG_SEG = 8;
+const FG_N = 8;
+const fgSegments = [];
+for (let i = 0; i < FG_N; i++) {
+  const g = gen.createForegroundSegment(-16 + i * FG_SEG);
+  scene.add(g);
+  fgSegments.push(g);
+}
+
+// ── runner game (autopilot — plays itself, ZERO player input) ──
+const CHAR_X = -1.5;
+const CHAR_TARGET_H = 1.5; // world units — a readable runner in the 4-unit corridor
+const GRAVITY = 12;
+const JUMP_V = 4.6;
+const OBSTACLE_W = 0.4;
+const OBSTACLE_H = 0.55;
+
+let character = null; // owner's model root (models/Lavr.fbx), feet on floor at CHAR_X
+let mixer = null;     // AnimationMixer — only if the FBX carries its own clips
+let charGroundY = 0;
+let grounded = true;
+let velocityY = 0;
+let runPhase = 0;
+const bones = []; // parametric rig entries: { bone, kind, axisP, q0 }
+
+const RIG = {
+  LeftUpLeg: "thighL", RightUpLeg: "thighR",
+  LeftLeg: "shinL", RightLeg: "shinR",
+  LeftArm: "armL", RightArm: "armR",
+  LeftForeArm: "foreL", RightForeArm: "foreR",
+};
+
+const _qa = new THREE.Quaternion();
+const _qb = new THREE.Quaternion();
+const _qc = new THREE.Quaternion();
+const _va = new THREE.Vector3();
+const _vb = new THREE.Vector3();
+const _vp = new THREE.Vector3();
+const _vs = new THREE.Vector3();
+
+// Parametric run cycle: rotate the bone about axisP (its PARENT's rest frame)
+// by v on top of the captured rest pose q0. Exact quaternion playback — no
+// Euler component writes, so the swing axis can never drift with the bind pose.
+function setBone(e, v) {
+  _qa.setFromAxisAngle(e.axisP, v);
+  e.bone.quaternion.copy(_qa).multiply(e.q0);
+}
+
+// Pre-rotate a bone about a WORLD axis while the rig is at rest (poses the
+// T-pose arms down before swing axes are derived).
+function preRotateWorld(bone, axisW, angle) {
+  bone.updateWorldMatrix(true, false);
+  // decompose, NOT setFromRotationMatrix: matrixWorld carries the fit scale
+  // (cm→units), and extracting a rotation from a scaled matrix yields garbage.
+  bone.parent.matrixWorld.decompose(_vp, _qb, _vs);
+  _qc.copy(_qb).invert().multiply(_qa.setFromAxisAngle(axisW, angle)).multiply(_qb);
+  bone.quaternion.premultiply(_qc); // local = parentFrame⁻¹ ∘ worldDelta ∘ parentFrame
+  bone.updateWorldMatrix(false, true);
+}
+
+// Pose and derive: drop the T-pose arms to the sides, then capture each bone's
+// swing axis — cross(boneDir, runDir) means +θ swings the bone tip TOWARD
+// runDir (right-hand rule) — expressed in the parent's rest frame.
+function setupRig(model) {
+  const byName = {};
+  model.traverse((o) => { if (o.isBone) byName[o.name] = o; });
+  const missing = Object.keys(RIG).filter((n) => !byName[n]);
+  if (missing.length > 0) {
+    // explicit failure, no substitute animation: log loudly, character stays static
+    console.error("Lavr.fbx: rig bones missing — parametric run not applied:", missing.join(", "));
+    return;
+  }
+  // T-pose arms hang ~15° off the body, not out at shoulder height
+  preRotateWorld(byName.LeftArm, _va.set(1, 0, 0), -1.30);
+  preRotateWorld(byName.RightArm, _va.set(1, 0, 0), 1.30);
+  const runDir = _vb.set(1, 0, 0); // the runner faces +x
+  for (const [name, kind] of Object.entries(RIG)) {
+    const bone = byName[name];
+    bone.updateWorldMatrix(true, false);
+    const p = new THREE.Vector3().setFromMatrixPosition(bone.matrixWorld);
+    const child = bone.children.find((c) => c.isBone);
+    if (!child) { console.error("Lavr.fbx: no child bone for", name); continue; }
+    const c = new THREE.Vector3().setFromMatrixPosition(child.matrixWorld);
+    const boneDir = c.sub(p).normalize();
+    const axisW = boneDir.clone().cross(runDir);
+    if (axisW.lengthSq() < 1e-10) { console.error("Lavr.fbx: degenerate swing axis for", name); continue; }
+    axisW.normalize();
+    // scale-immune extraction — same reason as in preRotateWorld
+    bone.parent.matrixWorld.decompose(_vp, _qb, _vs);
+    const axisP = axisW.applyQuaternion(_qb.invert()); // world axis → parent frame
+    bones.push({ bone, kind, axisP, q0: bone.quaternion.clone() });
+  }
+  console.log(`Lavr.fbx: parametric rig active on ${bones.length} bones`);
+}
+
+new FBXLoader().load(
+  "/models/Lavr.fbx",
+  (model) => {
+    // Owner verdict: at 0 the native front (+z) faces the camera —
+    // π/2 turns it profile-right (+x), the side-scroller direction.
+    model.rotation.y = Math.PI / 2;
+    model.updateMatrixWorld(true);
+    // Fit by SKELETON bones: the skinned surface follows the bones, so the
+    // bone span — not the bind-pose geometry box — is the true size.
+    const box = new THREE.Box3();
+    model.traverse((o) => {
+      if (o.isBone) box.expandByPoint(o.getWorldPosition(new THREE.Vector3()));
+    });
+    const size = box.getSize(new THREE.Vector3());
+    if (!(size.y > 0)) {
+      console.error("Lavr.fbx: empty skeleton box — model unusable");
+      embedPost({ type: "error", message: "Lavr.fbx: empty skeleton box — see console" });
+      const el = document.getElementById("loading");
+      el.style.display = "flex";
+      el.innerText = "fbx error — see console";
+      return;
+    }
+    const s = CHAR_TARGET_H / size.y;
+    model.scale.setScalar(s);
+    const center = box.getCenter(new THREE.Vector3());
+    charGroundY = -box.min.y * s;
+    model.position.set(CHAR_X - center.x * s, charGroundY, -center.z * s);
+    model.updateMatrixWorld(true);
+    setupRig(model); // axes must be derived in the FINAL orientation
+    if (model.animations && model.animations.length > 0) {
+      mixer = new THREE.AnimationMixer(model);
+      mixer.clipAction(model.animations[0]).play();
+      console.log(`Lavr.fbx: playing clip "${model.animations[0].name}"`);
+    } else {
+      console.log("Lavr.fbx: no clips in file — static pose with physics (jump/bob)");
+    }
+    scene.add(model);
+    character = model;
+  },
+  undefined,
+  (err) => {
+    // explicit failure, no substitute character: visible status + log
+    console.error("Lavr.fbx failed to load", err);
+    embedPost({ type: "error", message: "Lavr.fbx failed to load — see console" });
+    const el = document.getElementById("loading");
+    el.style.display = "flex";
+    el.innerText = "fbx load failed — see console";
+  },
+);
+
+// ── themed obstacles: ONE style per zone (owner order 2026-09-25:
+// "препятствие тематическое в каждой зоне своё"). Shared geometry and
+// materials are cached per style and never disposed (no teardown here).
+const obGeoCache = new Map();
+const obMatCache = new Map();
+function obGeo(name, make) {
+  let g = obGeoCache.get(name);
+  if (!g) {
+    g = make();
+    g.userData.cached = true;
+    obGeoCache.set(name, g);
+  }
+  return g;
+}
+function obMat(name, make) {
+  let m = obMatCache.get(name);
+  if (!m) {
+    m = make();
+    m.userData.cached = true;
+    obMatCache.set(name, m);
+  }
+  return m;
+}
+const obstacles = [];
+let spawnTimer = 1.6;
+// The obstacle style follows the LEVEL's theme and changes only when a
+// dissolve finishes: obstacles survive switches (owner order — the old
+// "cube that disappears when switching" was rejected — re-dress, no clear).
+let obstacleKeyIdx = 0;
+
+// Rebuild a root obstacle's children in the style of theme index tIdx.
+// Every style shares the original jump footprint: geometry bottom at
+// -OBSTACLE_H/2 from the root origin (root y = OBSTACLE_H/2 => sits on the
+// floor) — the scripted jump stays fair.
+function dressObstacle(root, tIdx) {
+  for (let i = root.children.length - 1; i >= 0; i--) root.remove(root.children[i]);
+  const t = T[tIdx];
+  const dark = obMat(`dk-${t.key}`, () => new THREE.MeshStandardMaterial({
+    color: new THREE.Color(t.floor).multiplyScalar(0.7),
+    metalness: 0.8,
+    roughness: 0.45,
+  }));
+  const glow = obMat(`gl-${t.key}`, () => new THREE.MeshStandardMaterial({
+    color: new THREE.Color(t.accent),
+    emissive: new THREE.Color(t.accent),
+    emissiveIntensity: 1.1,
+    metalness: 0.3,
+    roughness: 0.4,
+  }));
+  const mid = obMat(`md-${t.key}`, () => new THREE.MeshStandardMaterial({
+    color: new THREE.Color(t.accent).multiplyScalar(0.6),
+    emissive: new THREE.Color(t.accent),
+    emissiveIntensity: 0.45,
+    metalness: 0.6,
+    roughness: 0.5,
+  }));
+  const add = (geo, mat, x = 0, y = 0, z = 0) => {
+    const m = new THREE.Mesh(geo, mat);
+    m.position.set(x, y, z);
+    root.add(m);
+  };
+  switch (t.key) {
+    case "experience": // pipe stub with a hot flange
+      add(obGeo("o-pipe", () => new THREE.CylinderGeometry(0.2, 0.2, 0.45, 12)), dark, 0, -0.05, 0);
+      add(obGeo("o-flange", () => new THREE.CylinderGeometry(0.27, 0.27, 0.08, 12)), glow, 0, 0.22, 0);
+      break;
+    case "home": // dumpster + lid
+      add(obGeo("o-dump", () => new THREE.BoxGeometry(0.42, 0.5, 0.42)), dark);
+      add(obGeo("o-dumplid", () => new THREE.BoxGeometry(0.46, 0.07, 0.46)), mid, 0, 0.28, 0);
+      break;
+    case "games": { // arcade token standing on edge
+      const coin = new THREE.Mesh(obGeo("o-coin", () => new THREE.CylinderGeometry(0.27, 0.27, 0.1, 18)), glow);
+      coin.rotation.x = Math.PI / 2;
+      root.add(coin);
+      add(obGeo("o-coinring", () => new THREE.TorusGeometry(0.19, 0.03, 8, 20)), dark, 0, 0, 0.04);
+      break;
+    }
+    case "assets": // stanchion cone + glowing cap
+      add(obGeo("o-cone", () => new THREE.ConeGeometry(0.24, 0.55, 12)), mid);
+      add(obGeo("o-cap", () => new THREE.SphereGeometry(0.07, 8, 6)), glow, 0, 0.33, 0);
+      break;
+    case "tech": // server block + LED strips
+      add(obGeo("o-srv", () => new THREE.BoxGeometry(0.4, 0.5, 0.4)), dark);
+      add(obGeo("o-led", () => new THREE.BoxGeometry(0.3, 0.04, 0.02)), glow, 0, 0.1, 0.21);
+      add(obGeo("o-led", () => new THREE.BoxGeometry(0.3, 0.04, 0.02)), glow, 0, -0.12, 0.21);
+      break;
+    case "about": { // rolled drawings (two rolls + strap)
+      const rollA = new THREE.Mesh(obGeo("o-roll", () => new THREE.CylinderGeometry(0.13, 0.13, 0.5, 10)), dark);
+      rollA.rotation.z = Math.PI / 2;
+      rollA.position.set(0, -0.14, 0);
+      root.add(rollA);
+      const rollB = new THREE.Mesh(obGeo("o-roll", () => new THREE.CylinderGeometry(0.13, 0.13, 0.5, 10)), mid);
+      rollB.rotation.z = Math.PI / 2;
+      rollB.position.set(0, 0.14, 0);
+      root.add(rollB);
+      add(obGeo("o-strap", () => new THREE.BoxGeometry(0.07, 0.56, 0.3)), dark);
+      break;
+    }
+    case "links": { // crystal cluster
+      const cry = new THREE.Mesh(obGeo("o-crystal", () => new THREE.OctahedronGeometry(0.3, 0)), glow);
+      cry.scale.set(0.8, 0.917, 0.8);
+      root.add(cry);
+      const shard = new THREE.Mesh(obGeo("o-shard", () => new THREE.OctahedronGeometry(0.16, 0)), mid);
+      shard.scale.set(0.9, 0.9, 0.9);
+      shard.position.set(0.17, -0.15, 0.05);
+      root.add(shard);
+      break;
+    }
+    default:
+      throw new Error(`obstacle style: no design for theme key "${t.key}" — explicit failure, no fallback`);
+  }
+}
+
+function stepGame(dt) {
+  // obstacles ride the world: spawn off-screen RIGHT, flow left with it
+  spawnTimer -= dt;
+  if (spawnTimer <= 0 && obstacles.length < 3) {
+    const ob = new THREE.Group();
+    dressObstacle(ob, obstacleKeyIdx);
+    ob.position.set(9, OBSTACLE_H / 2, 0);
+    scene.add(ob);
+    obstacles.push(ob);
+    spawnTimer = 2 + Math.random() * 1.6;
+  }
+  for (let i = obstacles.length - 1; i >= 0; i--) {
+    const ob = obstacles[i];
+    ob.position.x -= WORLD_SPEED * dt;
+    if (ob.position.x < -9.5) {
+      scene.remove(ob);
+      obstacles.splice(i, 1);
+    }
+  }
+
+  if (character) {
+    // autopilot: jump the obstacle approaching from the right
+    for (const ob of obstacles) {
+      const gap = ob.position.x - CHAR_X;
+      if (gap > 0 && gap < 1.7 && grounded && velocityY <= 0) {
+        velocityY = JUMP_V;
+        grounded = false;
+        break;
+      }
+    }
+
+    if (!grounded) {
+      velocityY -= GRAVITY * dt;
+      character.position.y += velocityY * dt;
+      if (character.position.y <= charGroundY) {
+        character.position.y = charGroundY;
+        velocityY = 0;
+        grounded = true;
+      }
+    }
+
+    runPhase += dt * (grounded ? 10 : 4);
+    // subtle run bob while grounded; set, not add — no cumulative drift
+    if (grounded) character.position.y = charGroundY + Math.abs(Math.sin(runPhase * 2)) * 0.02;
+
+    // parametric run cycle on the model's own rig (the previous version's animation)
+    const sw = Math.sin(runPhase);
+    const kneeL = Math.max(0, -sw);
+    const kneeR = Math.max(0, sw);
+    for (const e of bones) {
+      switch (e.kind) {
+        case "thighL": setBone(e, 0.55 * sw); break;
+        case "thighR": setBone(e, -0.55 * sw); break;
+        case "shinL": setBone(e, -1.0 * kneeL); break;
+        case "shinR": setBone(e, -1.0 * kneeR); break;
+        case "armL": setBone(e, -0.5 * sw); break; // contralateral to left leg
+        case "armR": setBone(e, 0.5 * sw); break;
+        default: setBone(e, 0.3); break; // elbows: fixed natural flex
+      }
+    }
+  }
+
+  if (mixer) mixer.update(dt);
+}
+
+// ── interaction (location switch only — NOT player input) ──
+// ── geometry dissolve (owner spec 2026-09-24: "дисолв должен быть на
+// геометрии уровня, а не на посте, уровень не должен фризить") ──
+// REWORK (owner verdict 2026-09-25: "дисолв проигрывается, а только потом
+// геометрия меняется" → plan sanctioned "ДА"): the switch is now a
+// TWO-SET WIPE. applyTheme() builds the incoming corridor set ALONGSIDE
+// the outgoing one (geo/mat cache makes it cheap), BOTH scroll together
+// (the level never freezes), and every armed level material
+// (MeshStandardMaterial.onBeforeCompile) clips itself per fragment against
+// the SAME glowing noise front (per-face UV cells + screen L→R sweep):
+// the OUTGOING set survives right of the front (d >= 0), the INCOMING set
+// left of it (d < 0) — the geometry changes AS the front passes: no
+// end-of-effect pop, no empty frame. Palettes stay per set (old = A, new
+// = B, single source gen.themePalette); background/fog lerp in JS over the
+// same progress; at the end the outgoing set is disposed (non-cached only)
+// and the incoming set becomes the corridor. No frozen frame, no fullscreen
+// post pass — the FX remains on the level geometry itself.
+const dis = {
+  active: false, t0: 0, dur: 1.0, fxT: 0,
+  frames: 0, fMax: 150, force: false,
+  pin: null, // ?fpin=P — frozen mid-wipe progress for deterministic stills
+  mats: [],
+  bgOld: new THREE.Color(0x000000), bgNew: new THREE.Color(0x000000),
+  fogOld: new THREE.Color(0x000000), fogNew: new THREE.Color(0x000000),
+  fogNear: [19, 32], fogFar: [19, 32],
+};
+
+function armSet(set, palNew, side) {
+  // side: 0 = OUTGOING set — kept right of the front (d >= 0);
+  //       1 = INCOMING set — kept left of the front (d < 0).
+  // Both sets are armed against the SAME uDisP progress, so the corridor
+  // geometry swaps fragment-by-fragment AS the front passes (two-set wipe,
+  // owner plan 2026-09-25, sanction "ДА"). Returns the armed materials —
+  // the caller assembles dis.mats for the shared progress/resize/finish.
+  const s = R.getDrawingBufferSize(new THREE.Vector2());
+  const mats = [];
+  const seen = new Set();
+  set.forEach((seg) => {
+    seg.traverse((o) => {
+      const m = o.material;
+      if (!m || !m.userData.role || seen.has(m)) return;
+      seen.add(m);
+      const role = m.userData.role;
+      const k = m.emissiveIntensity ?? 1;
+      if (m.userData.dis) {
+        // CACHED material re-arm: keep the injected shader and its uniform
+        // OBJECTS in place — three reuses the compiled program when the
+        // onBeforeCompile key is unchanged, so a REPLACED uniforms object
+        // would never receive updates (root cause of "дисолв не всегда
+        // срабатывает" after caching). Mutate values only, never recompile.
+        const live = m.userData.dis;
+        live.uPalNew.value.copy(palNew[role]);
+        if (role === "accent") live.uEmiNew.value.copy(palNew.accent).multiplyScalar(k);
+        else live.uEmiNew.value.setRGB(0, 0, 0);
+        live.uSide.value = side;
+        live.uDisP.value = 0;
+        live.uRes.value.set(s.x, s.y);
+        mats.push(m);
+        return;
+      }
+      // First arm (fresh material): snapshot its palette, inject the shader.
+      const u = {
+        uDisP: { value: 0 },
+        uSide: { value: side },
+        uRes: { value: new THREE.Vector2(s.x, s.y) },
+        uPalOld: { value: m.color.clone() },
+        uPalNew: { value: palNew[role].clone() },
+        // emissiveIntensity is baked into the emissive uniform by three —
+        // mirror that here so the dissolve matches the rebuilt look
+        uEmiOld: { value: m.emissive.clone().multiplyScalar(k) },
+        uEmiNew: { value: role === "accent" ? palNew.accent.clone().multiplyScalar(k) : new THREE.Color(0, 0, 0) },
+      };
+      m.userData.dis = u;
+      m.color.setRGB(1, 1, 1); // the palette now comes from the dissolve mix
+      m.onBeforeCompile = (shader) => {
+        Object.assign(shader.uniforms, u);
+        shader.vertexShader = shader.vertexShader
+          .replace("#include <common>", "#include <common>\nvarying vec2 vDisUv;")
+          .replace("#include <begin_vertex>", "#include <begin_vertex>\n  vDisUv = uv;");
+        shader.fragmentShader = shader.fragmentShader
+          .replace("#include <common>", [
+            "#include <common>",
+            "varying vec2 vDisUv;",
+            "uniform float uDisP;",
+            "uniform float uSide;",
+            "uniform vec2 uRes;",
+            "uniform vec3 uPalOld;",
+            "uniform vec3 uPalNew;",
+            "uniform vec3 uEmiOld;",
+            "uniform vec3 uEmiNew;",
+            "float dHash(vec2 p) { p = fract(p * vec2(123.34, 345.45)); p += dot(p, p + 34.345); return fract(p.x * p.y); }",
+          ].join("\n"))
+          .replace("#include <emissivemap_fragment>", [
+            "#include <emissivemap_fragment>",
+            "{",
+            "  // dissolve ON the geometry: per-face UV cells + screen sweep L→R",
+            "  float n = dHash(floor(vDisUv * 7.0)) * 0.6 + dHash(floor(vDisUv * 3.0 + 11.3)) * 0.2;",
+            "  float sx = gl_FragCoord.x / uRes.x;",
+            "  float field = clamp(n + 0.2 + sx * 0.35, 0.0, 1.0);",
+            "  float th = uDisP * 1.6 - 0.3;",
+            "  float d = field - th;",
+            "  // two-set wipe: the OUTGOING set survives right of the front,",
+            "  // the INCOMING set left of it — the corridor geometry changes",
+            "  // AS the front passes (no end-of-effect pop, no empty frame).",
+            "  if (d < 0.0 && uSide < 0.5) discard;",
+            "  if (d >= 0.0 && uSide > 0.5) discard;",
+            "  float m = step(0.0, d); // 1 = old side, 0 = new side",
+            "  diffuseColor.rgb *= mix(uPalNew, uPalOld, m);",
+            "  totalEmissiveRadiance = mix(uEmiNew, uEmiOld, m);",
+            "  totalEmissiveRadiance += vec3(1.0, 0.5, 0.12) * smoothstep(0.07, 0.0, abs(d)) * 1.6;",
+            "  diffuseColor.rgb *= 1.0 - 0.5 * exp(min(d, 0.0) * 14.0) * step(d, 0.0); // scorch behind front",
+            "}",
+          ].join("\n"));
+      };
+      m.needsUpdate = true;
+      mats.push(m);
+    });
+  });
+  return mats;
+}
+
+function resizeDissolve() {
+  const s = R.getDrawingBufferSize(new THREE.Vector2());
+  dis.mats.forEach((m) => { if (m.userData.dis) m.userData.dis.uRes.value.set(s.x, s.y); });
+}
+
+function updateDissolve() {
+  let p = Math.min(1, (clock.elapsedTime - dis.t0) / dis.dur);
+  if (dis.force) {
+    // debug capture: frame-count progress is deterministic under
+    // --virtual-time-budget (a timed progress overran the window)
+    p = Math.min(1, dis.frames++ / dis.fMax);
+    if (p >= 1) dis.force = false;
+  }
+  if (dis.pin !== null) p = dis.pin; // ?fpin=P: frozen mid-wipe capture
+  for (const m of dis.mats) m.userData.dis.uDisP.value = p;
+  scene.background.copy(dis.bgOld).lerp(dis.bgNew, p);
+  scene.fog.color.copy(dis.fogOld).lerp(dis.fogNew, p);
+  scene.fog.near = dis.fogNear[0] + (dis.fogNear[1] - dis.fogNear[0]) * p;
+  scene.fog.far = dis.fogFar[0] + (dis.fogFar[1] - dis.fogFar[0]) * p;
+  if (p >= 1) finishDissolve();
+}
+
+function finishDissolve() {
+  dis.active = false;
+  // Idle = fully visible for each set's side (disarm-by-state, no
+  // recompile): the OUTGOING set goes back to uDisP=0 (kept where d >= 0 —
+  // everywhere at th=-0.3), the INCOMING set idles at uDisP=1 (kept where
+  // d < 0 — everywhere at th=1.3). Both render their own theme palette.
+  for (const m of dis.mats) {
+    const du = m.userData.dis;
+    if (du) du.uDisP.value = du.uSide.value > 0.5 ? 1 : 0;
+  }
+  dis.mats = [];
+  scene.background.copy(dis.bgNew);
+  scene.fog.color.copy(dis.fogNew);
+  scene.fog.near = dis.fogNear[1];
+  scene.fog.far = dis.fogFar[1];
+  // The wipe is complete: the incoming set IS the corridor now — drop the
+  // outgoing one (non-cached resources only, shared cache untouched).
+  disposeSet(segments);
+  segments = segmentsNext;
+  segmentsNext = [];
+  // Obstacles SURVIVE the switch (owner order 2026-09-25): they only
+  // re-dress into the new zone's style — no clear, no respawn gap.
+  obstacleKeyIdx = currentThemeIdx;
+  for (const ob of obstacles) dressObstacle(ob, obstacleKeyIdx);
+}
+
+// one rAF draw: dissolve progress (if a switch is running), then the live
+// scene straight to the canvas — no RT passes, no frozen frame
+function renderFrame() {
+  if (dis.active) updateDissolve();
+  R.render(scene, cam);
+}
+
+function applyTheme(idx) {
+  if (dis.active) return; // one transition at a time (level stays coherent)
+  if (idx === currentThemeIdx) return; // same location — nothing to wipe; both
+  // sets would also SHARE the theme's cached materials, so a same-target
+  // wipe is not representable (explicit no-op, not a substitute path).
+  const theme = T[idx];
+  // Two-set wipe (owner plan 2026-09-25, sanction "ДА"): build the incoming
+  // set ALONGSIDE the outgoing one (cache makes it a plain-Object3D
+  // allocation) and arm both against the same front — geometry changes as
+  // the front passes, no pop at the end. Synchronous before the next rAF,
+  // so no un-armed frame is ever rendered.
+  const pal = gen.themePalette(theme);
+  segmentsNext = buildSegmentSet(idx);
+  dis.mats = [
+    ...armSet(segments, pal, 0), // outgoing — kept right of the front
+    ...armSet(segmentsNext, pal, 1), // incoming — kept left of the front
+  ];
+  dis.bgOld.copy(scene.background);
+  dis.bgNew.set(theme.bg);
+  dis.fogOld.copy(scene.fog.color);
+  dis.fogNew.set(theme.fog);
+  dis.fogNear = [scene.fog.near, theme.fogN];
+  dis.fogFar = [scene.fog.far, theme.fogF];
+  dis.frames = 0;
+  dis.t0 = clock.elapsedTime;
+  dis.active = true;
+  currentThemeIdx = idx;
+  document.getElementById("secLabel").innerText = theme.name;
+  document.querySelectorAll(".bar button").forEach((b, i) => b.classList.toggle("on", i === idx));
+  document.body.classList.add("fx");
+  clearTimeout(dis.fxT);
+  dis.fxT = setTimeout(() => document.body.classList.remove("fx"), dis.dur * 1000 + 200);
+}
+
+const bar = document.getElementById("bar");
+T.forEach((theme, idx) => {
+  const btn = document.createElement("button");
+  btn.style.setProperty("--c", `#${theme.accent.toString(16).padStart(6, '0')}`);
+  btn.className = idx === 0 ? "on" : "";
+  btn.onclick = () => applyTheme(idx);
+  bar.appendChild(btn);
+});
+document.getElementById("secLabel").innerText = T[0].name;
+
+// debug capture (?fxshot): deterministic mid-dissolve frame under
+// --virtual-time-budget=4800: frame-count progress (a timed one overran);
+// switch at 3600 leaves ~72 RAF frames of budget, fMax=150 cannot reach
+// 1.0 => the capture is guaranteed to land mid-dissolve (p≈0.48).
+// Budgets are halved vs 8600: SwiftShader renders every RAF frame for real,
+// so wall time scales with frame count.
+if (new URLSearchParams(location.search).has("fxshot")) {
+  dis.force = true;
+  setTimeout(() => applyTheme(1), 3600);
+}
+// ?fx=N (and ?fx2=N): TIMED dissolve switch (default dur=1.0s) — the
+// capture-friendly path: progress derives from virtual time, so budgets
+// past switch+1s land POST-wipe; fx2 = the SECOND switch (cached-material
+// re-arm path). Add ?fxf=M for frame-count force mode, ?fpin=P to freeze
+// the wipe at a fixed progress (deterministic mid-transition stills).
+const fxQ = new URLSearchParams(location.search);
+if (fxQ.has("fx")) {
+  setTimeout(() => applyTheme(Number(fxQ.get("fx"))), 3600);
+}
+if (fxQ.has("fx2")) {
+  setTimeout(() => applyTheme(Number(fxQ.get("fx2"))), 7000);
+}
+// ?fxf=M: frame-count force mode (default 150) — progress = frames/M
+// instead of elapsed time; deterministic under --virtual-time-budget when
+// a timed capture lands wherever the budget allows.
+if (fxQ.has("fxf")) {
+  const fxfVal = Number(fxQ.get("fxf"));
+  if (!Number.isInteger(fxfVal) || fxfVal < 1) {
+    throw new Error(`?fxf=${fxQ.get("fxf")} is not a positive frame count`);
+  }
+  dis.fMax = fxfVal;
+  dis.force = true;
+}
+// ?fpin=P (0 <= P < 1): FREEZE the wipe at progress P — deterministic
+// mid-transition still of the two-set geometry handoff (outgoing geometry
+// right of the front, incoming left of it). Never reaches finish, so any
+// budget past the switch screenshots the SAME frame.
+if (fxQ.has("fpin")) {
+  const fpinVal = Number(fxQ.get("fpin"));
+  if (!Number.isFinite(fpinVal) || fpinVal < 0 || fpinVal >= 1) {
+    throw new Error(`?fpin=${fxQ.get("fpin")} must be in [0, 1)`);
+  }
+  dis.pin = fpinVal;
+}
+// debug capture (?loc=N): instant location state for stills — NO dissolve
+// (capture harness only; the product switch path is applyTheme alone).
+const locParam = new URLSearchParams(location.search).get("loc");
+if (locParam !== null) {
+  const n = Number(locParam);
+  if (!Number.isInteger(n) || n < 0 || n >= T.length) {
+    throw new Error(`?loc=${locParam} is not a valid theme index`);
+  }
+  currentThemeIdx = n;
+  obstacleKeyIdx = n;
+  scene.background.set(T[n].bg);
+  scene.fog.color.set(T[n].fog);
+  scene.fog.near = T[n].fogN;
+  scene.fog.far = T[n].fogF;
+  buildCorridor();
+  document.getElementById("secLabel").innerText = T[n].name;
+  document.querySelectorAll(".bar button").forEach((b, i) => b.classList.toggle("on", i === n));
+}
+
+// ?obat=MS: capture harness — spawn one obstacle at x=9 MS milliseconds
+// after load (deterministic obstacle presence in stills; style = the
+// current zone, and it is re-dressed live if a dissolve finishes later).
+const obatParam = new URLSearchParams(location.search).get("obat");
+if (obatParam !== null) {
+  setTimeout(() => {
+    if (obstacles.length >= 3) return;
+    const ob = new THREE.Group();
+    dressObstacle(ob, obstacleKeyIdx);
+    ob.position.set(9, OBSTACLE_H / 2, 0);
+    scene.add(ob);
+    obstacles.push(ob);
+  }, Number(obatParam));
+}
+
+// ── animation ──
+const clock = new THREE.Clock();
+function anim() {
+  requestAnimationFrame(anim);
+  const dt = Math.min(clock.getDelta(), 0.1);
+
+  // Self-play: the world flows LEFT (runner faces right), 6 u/s time-based.
+  // BOTH corridor sets scroll identically during a wipe — the outgoing set
+  // stays aligned under the moving front (the level never freezes).
+  for (const set of [segments, segmentsNext]) {
+    set.forEach((seg) => {
+      seg.position.x -= WORLD_SPEED * dt;
+      if (seg.position.x < -40) {
+        seg.position.x += NSEG * SEG;
+      }
+    });
+  }
+  // Foreground parallax: same flow at 1.3x speed = depth in front of the
+  // runner (fixed dark silhouette layer — never rebuilt, never disarmed).
+  fgSegments.forEach((g) => {
+    g.position.x -= WORLD_SPEED * 1.3 * dt;
+    if (g.position.x < -20) {
+      g.position.x += FG_N * FG_SEG;
+    }
+  });
+  stepGame(dt);
+
+  renderFrame();
+}
+anim();
+document.getElementById("loading").style.display = "none";
+
+// Embed protocol: listener first, then announce readiness with the active
+// location — the parent replies with its current section (a same-key
+// apply is applyTheme's own no-op), so the frame always syncs to the page.
+if (EMBED) {
+  addEventListener("message", (e) => {
+    if (e.origin !== location.origin) return;
+    const d = e.data;
+    if (!d || d.src !== "site" || d.type !== "theme") return;
+    const idx = T.findIndex((t) => t.key === d.key);
+    if (idx < 0) {
+      embedPost({ type: "error", message: `unknown runner theme "${d.key}" — theme unchanged` });
+      return;
+    }
+    applyTheme(idx);
+  });
+  embedPost({ type: "ready", theme: T[currentThemeIdx].key });
+}
+</script>
+</body>
+</html>

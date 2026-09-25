@@ -39,3 +39,15 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# dev-only preview tooling (kept locally, excluded from the GitHub Pages artifact — see runner-generation-pipeline.md)
+/models/
+/public/glb-preview.html
+__pycache__/
+# models/: only the locked character deploys (deploy copy); the rest of the
+# directory is dev-only pipeline assets (samples, experiments, PBR sources)
+/public/models/*
+!/public/models/Lavr.fbx
+
+# local audit artifacts (Lighthouse reports are evidence, not source)
+lighthouse-*.json

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img">
+  <title>Панельная стена коридора (бесшовная)</title>
+  <defs>
+    <!--
+      Seamless uniform panel wall. The 128x64 cell divides 512 exactly (4x8).
+      Brick stagger: horizontal seam on the cell top line, vertical seams at
+      half-cell offsets — each seam transitions identically at the wrap, so
+      the canvas edge step equals an interior step. Seams are filled rects
+      inside the cell; no diagonal gradient, no drop shadow, no edge bands.
+    -->
+    <pattern id="panelCell" width="128" height="64" patternUnits="userSpaceOnUse">
+      <rect x="0" y="0" width="128" height="3" fill="#171a20"/>
+      <rect x="0" y="3" width="128" height="2" fill="#2c313b"/>
+      <rect x="0" y="32" width="3" height="32" fill="#171a20"/>
+      <rect x="3" y="32" width="2" height="32" fill="#2c313b"/>
+      <rect x="64" y="0" width="3" height="32" fill="#171a20"/>
+      <rect x="67" y="0" width="2" height="32" fill="#2c313b"/>
+      <rect x="8" y="8" width="48" height="20" fill="#262a33"/>
+      <rect x="76" y="36" width="44" height="20" fill="#262a33"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="#23262e"/>
+  <rect width="512" height="512" fill="url(#panelCell)"/>
+</svg>

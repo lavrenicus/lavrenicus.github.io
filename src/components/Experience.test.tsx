@@ -16,8 +16,11 @@ test("lists each project with its own scope", () => {
   expect(within(cards[5]).getByText("ImmerseRender")).toBeInTheDocument();
   expect(within(cards[5]).getByText("2024–2026")).toBeInTheDocument();
   expect(within(cards[5]).getByText("render farm operations · 3D production")).toBeInTheDocument();
-  expect(within(cards[6]).getByText("SmartPool")).toBeInTheDocument();
-  expect(within(cards[6]).getByText("team")).toBeInTheDocument();
-  expect(within(cards[7]).getByText("NNRigger")).toBeInTheDocument();
-  expect(within(cards[7]).getByText("personal")).toBeInTheDocument();
+  expect(within(cards[6]).getByText("SpriteMaster")).toBeInTheDocument();
+  expect(within(cards[6]).getByText("personal")).toBeInTheDocument();
+  expect(within(cards[7]).getByText("desktopVillage")).toBeInTheDocument();
+  expect(within(cards[8]).getByText("NNRigger")).toBeInTheDocument();
+  expect(within(cards[8]).getByText("personal")).toBeInTheDocument();
+  expect(within(cards[9]).getByText("SmartPool")).toBeInTheDocument();
+  expect(within(cards[9]).getByText("team")).toBeInTheDocument();
 });

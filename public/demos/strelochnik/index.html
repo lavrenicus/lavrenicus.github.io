@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | RZD</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <link rel="manifest" href="manifest.webmanifest">
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" width=2532 height=1170 tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-instructions">
+            <div class="first-instruction">
+                <div  class="video-container">
+                  <img src="TemplateData/train-to-arrow.png"  style="display: none;max-height: 320px;"/>
+              <video autoplay muted>
+                <source
+    src="TemplateData/train-to-arrow.mp4"
+    type="video/mp4" />
+              </video>
+            </div>
+              <p>Нажми на стрелку, чтобы поезд повернул в нужную сторону</p>
+            </div>
+            <div class="second-instruction">
+
+                <div   class="video-container">
+                  <img src='TemplateData/train-to-station.png' style="display: none;max-height: 320px;"  />
+<video autoplay muted>
+                <source
+    src="TemplateData/train-to-station.mp4"
+    type="video/mp4" />
+              </video>
+
+
+                </div>
+
+                            <p>Каждый поезд должен попасть на станцию своего цвета</p>
+            </div>
+        </div>
+        <div id="unity-progress-bar-empty">
+          <img src='TemplateData/train.png' id="train"/>
+
+          <div id="unity-progress-bar-full"></div>
+        </div>
+        <h3 id="unity-loading-text">
+          Загрузка
+        </h3>
+      </div>
+    </div>
+    <script>
+      window.addEventListener("load", function () {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.register("ServiceWorker.js");
+        }
+      });
+      
+      // document.addEventListener('DOMContentLoaded', () => {
+        var w = window.innerWidth;
+var h = window.innerHeight;
+
+      var firstInstruction = document.querySelector('.first-instruction')
+      var secondInstruction = document.querySelector('.second-instruction')
+      console.log(w ,h)
+      if (w <= 880 || h <= 440) {
+        firstInstruction.querySelector('video').style.display = 'none'
+        firstInstruction.querySelector('img').style.display = 'block'
+        secondInstruction.querySelector('video').style.display = 'none'
+        secondInstruction.querySelector('img').style.display = 'block'
+      }
+
+      const firstInstructionVideo = firstInstruction.querySelector('video');
+      const secondInstructionVideo = secondInstruction.querySelector('video');
+      const firstInstructionImage = firstInstruction.querySelector('img');
+      const secondInstructionImage = secondInstruction.querySelector('img');
+
+      if (firstInstructionVideo && secondInstructionVideo) {
+        firstInstructionVideo.addEventListener('ended', () => {
+          firstInstruction.style.display = 'none';
+          secondInstruction.style.display = 'block';
+          secondInstructionVideo.play();
+        })
+        secondInstructionVideo.addEventListener('ended', () => {
+          firstInstruction.style.display = 'block';
+          secondInstruction.style.display = 'none';
+          firstInstructionVideo.play();
+        })
+      } 
+
+      // })
+
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var train = document.querySelector("#train");
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/Build.loader.js";
+      var config = {
+        dataUrl: buildUrl + "/Build.data",
+        frameworkUrl: buildUrl + "/Build.framework.js",
+        codeUrl: buildUrl + "/Build.wasm",
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "DefaultCompany",
+        productName: "RZD",
+        productVersion: "0.1",
+      };
+
+      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+        var meta = document.createElement('meta');
+        meta.name = 'viewport';
+        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+      }
+
+      loadingBar.style.display = "block";
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+                var w = window.innerWidth;
+var h = window.innerHeight;
+          const percent = 100 * progress;
+          progressBarFull.style.width =  percent+ "%";
+          train.style.left = (100 * progress-15)+ "%";
+          if (percent >= 50) {
+
+            if (w <= 880 || h <= 440) {
+             firstInstruction.style.display = 'none';
+             secondInstruction.style.display= 'block';
+            }
+          }
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>

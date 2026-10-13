@@ -51,3 +51,10 @@ __pycache__/
 
 # local audit artifacts (Lighthouse reports are evidence, not source)
 lighthouse-*.json
+
+# Local tools and generated artifacts
+/.shots/
+graphify-out/
+/public/demos/strelochnik/RZD_BurstDebugInformation_DoNotShip/
+/todo.md
+/convert_svg_to_png.py

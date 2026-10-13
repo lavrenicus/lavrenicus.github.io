@@ -1,0 +1,147 @@
+@font-face {
+    font-family: 'RussianRail G Pro';
+    src: url('./fonts/RussianRail-G-Pro-Extend.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+@font-face {
+  font-family: 'RussianRail G Pro';
+  src: url('./fonts/RussianRail-G-Pro-Extended-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('./fonts/IBMPlexSans-Light.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans';
+  src: url('./fonts/IBMPlexSans-ExtraLight.ttf') format('truetype');
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'RussianRail G Pro Bold';
+  src: url('./fonts/RussianRail-G-Pro-Extended-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+body { padding: 0; margin: 0; background: #000; }
+
+* {
+	font-family: 'RussianRail G Pro', sans-serif;
+}
+
+#unity-container { position: fixed; width: 100%; height: 100%;
+	background: url('bg-cover-dark.jpg');
+	background-size: cover;
+}
+
+#unity-canvas { 
+	width: 100%; height: 100%; 
+	background: url('bg-cover-dark.jpg');
+	background-size: cover;
+}
+
+#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none;
+ }
+
+ #unity-loading-text {
+ 	font-size: 20px;
+ 	font-weight: bold;
+ 	text-align: center;
+ }
+
+#unity-progress-bar-empty { margin-left: auto; margin-right: auto; width: 141px; height: 12px; margin-top: 10px; 
+/*	background: url('progress-bar-empty-dark.png') no-repeat center ;*/
+background: #65879A;
+border-radius: 10px;
+position: relative;
+}
+
+#unity-progress-bar-full { width: 0%; height: 12px; margin-top: 32px; 
+/*	background: url('progress-bar-full-dark.png') no-repeat center ;*/
+border-radius: 10px;
+background: #FADC0A;
+}
+
+#unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }
+
+#unity-instructions {
+	width: 50vw;
+	margin: 0 auto;
+	border-radius: 16px;
+	margin-bottom: 24px;
+
+}
+
+#unity-text {
+	margin-top: 72px;
+	font-size: 20px;
+	text-align: center;
+}
+
+
+
+#train {
+	position: absolute;
+	top: -20px;
+	left: 0;
+
+}
+
+.video-container {
+box-shadow: 0px 12px 22px 0px rgba(0, 0, 0, 0.14);
+border-radius: 16px;
+overflow:hidden;
+
+}
+
+
+.first-instruction video, .second-instruction video {
+width: 101%;margin-bottom: -6px;
+}
+
+.first-instruction p, .second-instruction p {
+	font-size:16px;
+	color: #000;
+	line-height: 12px;
+	padding-top: 10px;
+	font-weight: 400;text-align: center;
+	font-family: 'IBM Plex Sans', sans-serif;
+
+}
+
+.first-instruction {
+
+}
+
+.second-instruction {
+	display: none;
+}
+
+@media screen and (max-width: 880px)  {
+	#unity-instructions {
+		width: 92vw;
+		margin-bottom: 24px;
+	}
+.first-instruction p, .second-instruction p {
+	font-size: 14px;
+}
+}
+
+@media screen and (max-height: 440px) {
+	#unity-instructions {
+		width: 36vw;
+	}
+	.first-instruction p, .second-instruction p {
+	font-size: 14px;
+}
+}

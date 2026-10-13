@@ -159,7 +159,18 @@ export const games: GameItem[] = [
     gradientFrom: "#0d1826",
     gradientTo: "#091220",
   },
+  {
+    id: "strelochnik",
+    title: "Стрелочник",
+    meta: "railway puzzle · Unity · WebGL",
+    description: "A railway puzzle game where players switch track junctions to guide colored trains to their matching stations.",
+    demoKey: "strelochnik",
+    demoAvailable: true,
+    gradientFrom: "#252a2e",
+    gradientTo: "#111619",
+  },
 ];
+
 
 // 3D assets / models — external showcases (e.g. Sketchfab).
 export const assets: AssetItem[] = [

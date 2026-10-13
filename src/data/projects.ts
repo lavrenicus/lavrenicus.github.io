@@ -169,6 +169,16 @@ export const games: GameItem[] = [
     gradientFrom: "#252a2e",
     gradientTo: "#111619",
   },
+  {
+    id: "plehanovka",
+    title: "Plekhanov University Navigation",
+    meta: "3D indoor navigation · Babylon.js · React · TypeScript",
+    description: "Interactive 3D indoor navigation application featuring eight building floors, room search, and route planning.",
+    demoKey: "plehanovka",
+    demoAvailable: true,
+    gradientFrom: "#263342",
+    gradientTo: "#101820",
+  },
 ];
 
 
